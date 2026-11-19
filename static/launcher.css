@@ -1,0 +1,157 @@
+/* Toolbar chooser: 340px wide, two views of one height (tools, Following settings). The reader system
+   (docs/v1/EXTENSION-READER.md): an ink strip with the reader and a UTC readout, the Read key first with its slip
+   feeding out underneath, then the tools in three groups. Colours and faces from tokens.css. */
+* { box-sizing:border-box }
+html { color-scheme:light }
+body { width:340px; max-width:100%; min-height:476px; margin:0 auto; background:var(--xck-surface); color:var(--xck-text); font:14px/1.4 var(--xck-font); -webkit-font-smoothing:antialiased }
+.view { padding:8px 12px 4px }
+.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap }
+p { margin:0 }
+button { font:inherit; color:inherit; cursor:pointer }
+:focus-visible { outline:2px solid var(--xck-focus); outline-offset:2px }
+
+/* The strip: the reader, the name and the time in UTC. */
+.strip { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:4px 10px; min-height:40px; padding:0 8px 0 14px; background:var(--xck-bar); color:#fff }
+.kit-name { display:flex; align-items:center; gap:9px; font-weight:800; font-stretch:112%; font-size:14px; letter-spacing:-.02em; white-space:nowrap }
+.kit-name .xck-rd { font-size:18px }
+.strip .xck-utc { height:26px; padding:0 8px; font-size:13px }
+
+/* Read: an ink key on its lip. Hover lifts it, a press sinks it; the label changes while it works and the key
+   keeps its size. Its end cap holds the reader's eyes, which travel while a read runs. */
+.capture-area { position:relative }
+#capture { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; min-height:44px; padding:6px 6px 6px 16px; border:0; border-radius:12px;
+  background:var(--xck-ink); box-shadow:0 4px 0 0 var(--xck-lip); color:var(--xck-on-ink); font-weight:650; font-size:15px; letter-spacing:-.01em; text-align:left;
+  transition:translate 140ms var(--xck-ease), box-shadow 140ms var(--xck-ease) }
+#capture .cap { display:flex; align-items:center; justify-content:center; gap:4px; flex:none; width:32px; height:32px; border-radius:7px; background:#fff }
+#capture .cap i { width:5px; height:5px; background:var(--xck-ink) }
+#capture:active { translate:0 4px; box-shadow:0 0 0 0 var(--xck-lip); transition-duration:60ms }
+#capture:focus-visible { outline:2.5px solid var(--xck-focus); outline-offset:3px }
+#capture[aria-busy=true] { cursor:progress; translate:0 4px; box-shadow:0 0 0 0 var(--xck-lip) }
+#capture[aria-busy=true] .cap i { animation:cap-scan .7s var(--xck-ease) infinite alternate }
+@keyframes cap-scan { from { transform:translateX(-5px) } to { transform:translateX(5px) } }
+/* The slip: what a read will save, then what it did, on paper that hangs from the key with a torn lower edge. */
+#capture-status { min-height:54px; margin:4px 8px 0; padding:9px 10px 11px; background:var(--xck-canvas); color:var(--xck-text-2); font-size:12.5px; line-height:1.35;
+  -webkit-mask:linear-gradient(#000 0 0) top / 100% calc(100% - 6px) no-repeat, conic-gradient(from -45deg at 50% 100%, #000 90deg, #0000 0) 0 100% / 12px 6px repeat-x;
+  mask:linear-gradient(#000 0 0) top / 100% calc(100% - 6px) no-repeat, conic-gradient(from -45deg at 50% 100%, #000 90deg, #0000 0) 0 100% / 12px 6px repeat-x }
+#capture-status.error { color:var(--xck-neg); font-weight:600 }
+.run-steps { display:grid; gap:3px; margin:0; padding:0; list-style:none }
+.run-steps li { display:grid; grid-template-columns:14px 1fr; gap:6px }
+.run-steps .mark { font-weight:700; text-align:center }
+.run-steps .done .mark { color:var(--xck-pos) }
+.run-steps .failed .mark { color:var(--xck-neg) }
+.run-steps .name { color:var(--xck-text); font-weight:650 }
+#tab-note { margin-top:2px; padding:0 4px; color:var(--xck-text-2); font-size:12.5px; line-height:1.35 }
+
+/* Tool rows: name, short hint and an arrow on one line. The whole row is the link; pointing at it closes the
+   reader's brackets around the row. */
+#tool-list { margin-top:4px }
+.tool-link { --b:transparent; display:flex; flex-wrap:wrap; align-items:center; gap:2px 10px; min-height:40px; padding:0 12px; border-radius:var(--xck-radius-control); color:inherit; text-decoration:none;
+  background-image:linear-gradient(var(--b), var(--b)), linear-gradient(var(--b), var(--b)), linear-gradient(var(--b), var(--b)), linear-gradient(var(--b), var(--b)), linear-gradient(var(--b), var(--b)), linear-gradient(var(--b), var(--b));
+  background-repeat:no-repeat; background-size:2px 24px, 6px 2px, 6px 2px, 2px 24px, 6px 2px, 6px 2px;
+  background-position:8px 50%, 8px calc(50% - 11px), 8px calc(50% + 11px), calc(100% - 8px) 50%, calc(100% - 8px) calc(50% - 11px), calc(100% - 8px) calc(50% + 11px);
+  transition:background-position 180ms var(--xck-ease) }
+.tool-link.group-start { position:relative; margin-top:1px }
+.tool-link.group-start::before { content:""; position:absolute; left:12px; right:12px; top:-1px; height:1px; background:var(--xck-border) }
+.tool-link strong { font-weight:650; letter-spacing:-.005em }
+.tool-link small { flex:1 1 auto; min-width:0; text-align:right; color:var(--xck-text-2); font:500 12.5px/1.3 var(--xck-mono) }
+.tool-link .go { width:14px; color:var(--xck-text-2); text-align:center; transition:translate 140ms var(--xck-ease), color 140ms var(--xck-ease) }
+.tool-link:hover { --b:var(--xck-ink);
+  background-position:0 50%, 0 calc(50% - 11px), 0 calc(50% + 11px), 100% 50%, 100% calc(50% - 11px), 100% calc(50% + 11px) }
+.tool-link:hover .go { color:var(--xck-text); translate:2px -2px }
+.tool-link:focus-visible { outline-offset:-2px }
+
+/* Following entry: a setting that opens in place, so it carries its state and a chevron instead of an arrow. */
+.setting-row { display:flex; align-items:center; gap:10px; width:100%; min-height:40px; padding:0 12px; border:0; border-radius:var(--xck-radius-control); background:transparent; text-align:left;
+  transition:background-color 140ms var(--xck-ease) }
+.setting-row:hover { background:var(--xck-canvas) }
+.setting-row:focus-visible { outline-offset:-2px }
+.setting-name { flex:1; font-weight:650; letter-spacing:-.005em }
+.state { display:inline-flex; align-items:center; gap:6px; color:var(--xck-text-2); font:500 12.5px/1.3 var(--xck-mono) }
+.state::before { content:""; width:6px; height:6px; border-radius:50%; background:var(--xck-control-border) }
+.state.on { color:var(--xck-pos) }
+.state.on::before { background:var(--xck-pos) }
+#settings-alert { margin:4px 0 0; padding:0 12px; color:var(--xck-neg); font-size:12.5px; font-weight:600; line-height:1.35 }
+.chevron { width:7px; height:7px; margin-right:3px; border-right:1.5px solid var(--xck-text-2); border-bottom:1.5px solid var(--xck-text-2); rotate:-45deg }
+footer { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:0 8px; min-height:24px; margin-top:4px; padding:0 4px; border-top:1px solid var(--xck-border); color:var(--xck-text-2); font:500 12.5px/1.4 var(--xck-mono) }
+#tour-replay { min-height:24px; padding:0 4px; border:0; border-radius:4px; background:none; font-family:var(--xck-font); font-weight:650; text-decoration:underline; text-underline-offset:3px }
+#quick-tour { margin:6px 0 8px; padding:10px 12px; border:1px solid var(--xck-border); border-left:2px solid var(--xck-ink); border-radius:var(--xck-radius-control); background:var(--xck-canvas) }
+#tour-count { color:var(--xck-text-2); font:500 12.5px/1.4 var(--xck-mono) }
+#tour-title { margin-top:3px }
+#tour-tip { margin:4px 0 8px; font-size:13px }
+.tour-actions { display:flex; flex-wrap:wrap; gap:6px }
+.tour-actions button { min-height:28px; padding:3px 9px; border:1px solid var(--xck-control-border); border-radius:6px; background:var(--xck-surface); font-size:13px; font-weight:650 }
+.tour-actions .tour-next { background:var(--xck-ink); color:var(--xck-on-ink); border-color:var(--xck-ink) }
+#quick-tour [hidden], #quick-tour[hidden], #tour-replay[hidden] { display:none }
+.tool-link[data-tour-anchor] { background-color:var(--xck-canvas); box-shadow:inset 2px 0 var(--xck-ink) }
+
+/* Following view: Back and title, the switch, its status, then the handle field and its action. */
+.view-head { display:flex; align-items:center; gap:8px; min-height:36px }
+#back { display:inline-flex; align-items:center; gap:6px; min-height:34px; padding:0 11px 0 9px; border:0; border-radius:var(--xck-radius-control); background:var(--xck-surface); box-shadow:0 2px 0 0 var(--xck-ink), inset 0 0 0 1.5px var(--xck-ink); font-weight:650;
+  transition:translate 140ms var(--xck-ease), box-shadow 140ms var(--xck-ease) }
+#back:active { translate:0 2px; box-shadow:0 0 0 0 var(--xck-ink), inset 0 0 0 1.5px var(--xck-ink) }
+.back-arrow { width:7px; height:7px; border-left:1.5px solid currentColor; border-bottom:1.5px solid currentColor; rotate:45deg }
+h2 { margin:0; font-size:15px; font-weight:800; font-stretch:112%; letter-spacing:-.02em }
+h2:focus { outline:none } /* Focus lands here only to announce the view; it is not a control. */
+
+/* On is drawn with an ink edge and an ink switch; keyboard focus is the separate ring outside the row. */
+.switch-row { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:48px; margin-top:10px; padding:0 12px; border-radius:var(--xck-radius-panel); box-shadow:inset 0 0 0 1px var(--xck-border); font-weight:650; cursor:pointer;
+  transition:box-shadow 140ms var(--xck-ease) }
+.switch-row:hover { box-shadow:inset 0 0 0 1px var(--xck-control-border) }
+.switch-row:has(input:checked) { box-shadow:inset 0 0 0 1.5px var(--xck-ink) }
+.switch-row:has(input:disabled) { cursor:progress }
+.switch-row:has(input:focus-visible) { outline:2px solid var(--xck-focus); outline-offset:3px }
+input[role=switch] { appearance:none; flex:none; position:relative; width:36px; height:20px; margin:0; border:1.5px solid var(--xck-control-border); border-radius:6px; background:var(--xck-surface); cursor:inherit;
+  transition:background-color 140ms var(--xck-ease), border-color 140ms var(--xck-ease) }
+input[role=switch]::before { content:""; position:absolute; top:2px; left:2px; width:13px; height:13px; border-radius:3px; background:var(--xck-control-border); transition:translate 140ms var(--xck-ease), background-color 140ms var(--xck-ease) }
+input[role=switch]:checked { border-color:var(--xck-ink); background:var(--xck-ink) }
+input[role=switch]:checked::before { translate:16px 0; background:var(--xck-on-ink) }
+input[role=switch]:disabled { opacity:.6 }
+input[role=switch]:focus-visible { outline:none }
+
+/* A miniature Following row showing the exact tint the page uses on X. */
+.tint-note { display:flex; gap:10px; align-items:center; margin-top:8px; padding:0 2px; color:var(--xck-text-2); font-size:12.5px; line-height:1.35 }
+.tint-sample { flex:none; display:grid; grid-template-columns:14px 1fr; grid-template-rows:5px 5px; gap:3px 6px; align-content:center; width:62px; height:30px; padding:0 7px; border:1px solid var(--xck-border); border-radius:5px;
+  background:linear-gradient(rgba(224, 64, 64, .08), rgba(224, 64, 64, .08)), #fff }
+.tint-sample i { grid-row:1 / 3; width:14px; height:14px; border-radius:50%; background:#cfd3d7 }
+.tint-sample b { display:block; height:4px; border-radius:2px; background:#cfd3d7 }
+.tint-sample b + b { width:70% }
+
+#following-status { min-height:34px; margin-top:8px; padding:0 2px; color:var(--xck-text); font-size:12.5px; line-height:1.35 }
+#following-status:empty { min-height:0; margin:0 }
+#following-status.error { color:var(--xck-neg); font-weight:600 }
+
+/* Handle: GOV.UK-style error, above the field and tied to it; the typed value stays. */
+.field { margin-top:12px; padding-top:12px; border-top:1px solid var(--xck-border) }
+.field label { display:block; margin-bottom:4px; font-size:13px; font-weight:650 }
+.field.invalid { margin-left:-2px; padding-left:10px; border-left:3px solid var(--xck-neg) }
+.field-error { margin:0 0 6px; color:var(--xck-neg); font-size:13px; font-weight:600; line-height:1.35 }
+#handle { width:100%; min-height:40px; padding:8px 10px; border:1px solid var(--xck-control-border); border-radius:var(--xck-radius-control); background:var(--xck-surface); color:inherit; font:500 13px/1.3 var(--xck-mono) }
+#handle:hover { border-color:var(--xck-text-2) }
+#handle:focus-visible { outline:none; border-color:var(--xck-focus); box-shadow:0 0 0 1px var(--xck-focus) }
+#handle[aria-invalid=true] { border-color:var(--xck-neg); box-shadow:0 0 0 1px var(--xck-neg) }
+#handle::placeholder { color:var(--xck-text-3) }
+/* A paper key: white face, ink edge, ink lip. */
+#open-following { width:100%; min-height:40px; margin:10px 0 3px; padding:8px 13px; border:0; border-radius:var(--xck-radius-control); background:var(--xck-surface); box-shadow:0 3px 0 0 var(--xck-ink), inset 0 0 0 1.5px var(--xck-ink); font-weight:650;
+  transition:translate 140ms var(--xck-ease), box-shadow 140ms var(--xck-ease) }
+#open-following:active { translate:0 3px; box-shadow:0 0 0 0 var(--xck-ink), inset 0 0 0 1.5px var(--xck-ink) }
+
+@media (hover:hover) {
+  #capture:hover:not([aria-busy=true]):not(:active) { translate:0 -1px; box-shadow:0 5px 0 0 var(--xck-lip) }
+  #back:hover:not(:active) { translate:0 -1px; box-shadow:0 3px 0 0 var(--xck-ink), inset 0 0 0 1.5px var(--xck-ink) }
+  #open-following:hover:not(:active) { translate:0 -1px; box-shadow:0 4px 0 0 var(--xck-ink), inset 0 0 0 1.5px var(--xck-ink) }
+}
+
+/* Opened as a tab (from a tool page's Following settings link): the shared bar leads, content is centred. */
+html.tab-mode body { width:auto; min-height:0; background:var(--xck-canvas) }
+html.tab-mode #launcher { max-width:420px; margin:32px auto; padding:6px 4px 10px; border:1px solid var(--xck-border); border-radius:var(--xck-radius-panel); background:var(--xck-surface) }
+html.tab-mode .strip, html.tab-mode #capture, html.tab-mode #capture-status { display:none }
+html.tab-mode .tool-link .go { display:none }
+
+html[data-motion-hidden] .strip :is(.xck-eye, .xck-utc i),
+html[data-motion-hidden] #capture[aria-busy=true] .cap i { animation:none }
+
+@media (prefers-reduced-motion:reduce) {
+  *, *::before { transition:none !important }
+  #capture[aria-busy=true] .cap i { animation:none }
+  .tool-link:hover .go { translate:none }
+}

@@ -1,0 +1,68 @@
+/* One ink bar for every tool page: the reader and the wordmark, the tools in three groups, the trust line and a
+   UTC readout. Colours come from static/tokens.css; the fallbacks are the same ink values. Selection is a paper
+   chip, hover draws the reader's brackets, keyboard focus is a separate white ring. */
+.xck-shell { box-sizing:border-box; position:sticky; top:0; z-index:20; display:flex; align-items:center; gap:0 18px; min-height:52px; padding:0 12px 0 20px;
+  background:var(--xck-bar, #131313); box-shadow:inset 0 -1px 0 var(--xck-bar-line, #34353a); color:#fff; font:14px/1.4 var(--xck-font, XckArchivo, Arial, sans-serif); -webkit-font-smoothing:antialiased }
+.xck-shell *, .xck-shell *::before, .xck-shell *::after { box-sizing:border-box }
+.xck-wordmark { display:flex; align-items:center; gap:10px; font-weight:800; font-stretch:112%; font-size:15px; letter-spacing:-.02em; white-space:nowrap }
+.xck-wordmark .xck-rd { font-size:20px }
+
+.xck-menu-toggle { display:none }
+.xck-nav { align-self:stretch; min-width:0 }
+.xck-links { display:flex; align-items:stretch; height:100%; gap:2px; margin:0; padding:0; list-style:none }
+.xck-links li { position:relative; display:flex; align-items:center }
+/* The brackets are six small gradients, so no pseudo-element sits on a route name. They are clear until hover. */
+.xck-links a { --b:transparent; display:inline-flex; align-items:center; min-height:34px; padding:0 13px; border-radius:8px; color:var(--xck-bar-text, #c9c9c4); font-weight:500; text-decoration:none; white-space:nowrap;
+  background-image:linear-gradient(var(--b), var(--b)), linear-gradient(var(--b), var(--b)), linear-gradient(var(--b), var(--b)), linear-gradient(var(--b), var(--b)), linear-gradient(var(--b), var(--b)), linear-gradient(var(--b), var(--b));
+  background-repeat:no-repeat; background-size:2px 18px, 5px 2px, 5px 2px, 2px 18px, 5px 2px, 5px 2px;
+  background-position:9px 50%, 9px calc(50% - 8px), 9px calc(50% + 8px), calc(100% - 9px) 50%, calc(100% - 9px) calc(50% - 8px), calc(100% - 9px) calc(50% + 8px);
+  transition:color 140ms var(--xck-ease, cubic-bezier(.2,0,0,1)), background-position 180ms var(--xck-ease, cubic-bezier(.2,0,0,1)) }
+.xck-links a:hover { --b:#fff; color:#fff;
+  background-position:3px 50%, 3px calc(50% - 8px), 3px calc(50% + 8px), calc(100% - 3px) 50%, calc(100% - 3px) calc(50% - 8px), calc(100% - 3px) calc(50% + 8px) }
+.xck-links a[aria-current=page], .xck-links a[aria-current=page]:hover { background:#fff; color:var(--xck-ink, #131313); font-weight:650 }
+/* Groups: Numbers, Make, On X. A hairline starts each group after the first. */
+.xck-links li[data-group]:not(:first-child) { margin-left:8px; padding-left:9px }
+.xck-links li[data-group]:not(:first-child)::before { content:""; position:absolute; left:0; top:50%; width:1px; height:20px; translate:0 -50%; background:var(--xck-bar-line, #34353a) }
+.xck-links a:focus-visible, .xck-menu-toggle:focus-visible { outline:2px solid #fff; outline-offset:2px }
+.xck-shell-end { display:flex; align-items:center; gap:14px; margin-left:auto; min-width:0 }
+.xck-trust { margin:0; color:#a9abb0; font:500 12.5px/1.3 var(--xck-mono, XckMartian, ui-monospace, monospace); white-space:nowrap }
+@media (max-width:1320px) { .xck-trust { display:none } }
+@media (max-width:1080px) { .xck-shell-end { display:none } }
+
+@media (max-width:860px) {
+  .xck-shell { position:static; flex-wrap:wrap; gap:0 12px; padding:0 12px 0 16px }
+  .xck-wordmark { flex:1; min-width:0; min-height:52px }
+  /* A paper key on the bar: it sits on a lip and sinks when pressed. */
+  .xck-menu-toggle { display:inline-flex; align-items:center; gap:10px; min-height:38px; margin-bottom:3px; padding:0 12px; border:0; border-radius:10px;
+    background:#fff; box-shadow:0 3px 0 0 rgba(255, 255, 255, .42); color:var(--xck-ink, #131313); font:inherit; font-weight:650; white-space:nowrap; cursor:pointer;
+    transition:translate 140ms var(--xck-ease, cubic-bezier(.2,0,0,1)), box-shadow 140ms var(--xck-ease, cubic-bezier(.2,0,0,1)) }
+  .xck-menu-toggle:active { translate:0 3px; box-shadow:0 0 0 0 rgba(255, 255, 255, .42) }
+  .xck-chevron { width:7px; height:7px; margin-top:-3px; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor; rotate:45deg; transition:rotate 140ms var(--xck-ease, cubic-bezier(.2,0,0,1)) }
+  .xck-open .xck-chevron { rotate:225deg; margin-top:3px }
+  .xck-nav { display:none; flex-basis:100%; align-self:auto }
+  .xck-open .xck-nav { display:block; padding:4px 0 10px; border-top:1px solid var(--xck-bar-line, #34353a) }
+  .xck-links { flex-direction:column; height:auto; gap:0 }
+  .xck-links li { display:block }
+  .xck-links li[data-group]:not(:first-child) { margin:6px 0 0; padding:0 }
+  /* Each group is named above its routes. */
+  .xck-links li[data-group]::before, .xck-links li[data-group]:not(:first-child)::before { content:attr(data-group); display:block; position:static; width:auto; height:auto; translate:none; background:none;
+    padding:10px 14px 4px; color:#a9abb0; font:500 12.5px/1.3 var(--xck-mono, XckMartian, ui-monospace, monospace); letter-spacing:.04em; text-transform:uppercase }
+  .xck-links a { display:flex; min-height:44px; padding:0 14px; font-size:15px;
+    background-position:6px 50%, 6px calc(50% - 8px), 6px calc(50% + 8px), calc(100% - 6px) 50%, calc(100% - 6px) calc(50% - 8px), calc(100% - 6px) calc(50% + 8px) }
+  .xck-links a:hover { background-position:2px 50%, 2px calc(50% - 8px), 2px calc(50% + 8px), calc(100% - 2px) 50%, calc(100% - 2px) calc(50% - 8px), calc(100% - 2px) calc(50% + 8px) }
+  .xck-shell-end { display:none }
+  .xck-open .xck-shell-end { display:flex; flex-wrap:wrap; flex-basis:100%; justify-content:space-between; gap:8px 14px; margin:0; padding:10px 14px 14px; border-top:1px solid var(--xck-bar-line, #34353a) }
+  .xck-open .xck-trust { display:block; white-space:normal }
+}
+/* At the narrowest widths the reader carries the brand so the current tool name never truncates. */
+@media (max-width:380px) { .xck-wordmark { font-size:0; gap:0 } }
+@media (hover:hover) and (max-width:860px) { .xck-menu-toggle:hover { translate:0 -1px; box-shadow:0 4px 0 0 rgba(255, 255, 255, .42) } }
+@media (prefers-reduced-motion:reduce) { .xck-links a, .xck-chevron, .xck-menu-toggle { transition:none } }
+/* Seven tool routes fit above the compact-menu breakpoint. */
+@media (min-width:861px) and (max-width:1000px) {
+  .xck-shell { gap:0 10px; padding:0 10px 0 14px }
+  .xck-links a { padding:0 9px;
+    background-position:6px 50%, 6px calc(50% - 8px), 6px calc(50% + 8px), calc(100% - 6px) 50%, calc(100% - 6px) calc(50% - 8px), calc(100% - 6px) calc(50% + 8px) }
+  .xck-links a:hover { background-position:2px 50%, 2px calc(50% - 8px), 2px calc(50% + 8px), calc(100% - 2px) 50%, calc(100% - 2px) calc(50% - 8px), calc(100% - 2px) calc(50% + 8px) }
+  .xck-links li[data-group]:not(:first-child) { margin-left:5px; padding-left:6px }
+}

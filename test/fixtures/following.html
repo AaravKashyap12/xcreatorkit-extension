@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Synthetic Following list</title></head><body>
+  <a data-testid="AppTabBar_Profile_Link" href="/byaarav">Perfil</a>
+  <main data-testid="primaryColumn">
+    <section aria-labelledby="following-list"><h1 id="following-list">Siguiendo</h1>
+      <div data-testid="cellInnerDiv" id="missing"><div data-testid="UserCell"><a href="/maker_one">Maker One</a></div></div>
+      <div data-testid="cellInnerDiv" id="mutual"><div data-testid="UserCell"><a href="/maker_two">Maker Two</a><span data-testid="userFollowIndicator">Te sigue</span></div></div>
+      <div data-testid="cellInnerDiv" id="unknown"><div data-testid="UserCell"><span>Unknown structure</span></div></div>
+      <div data-testid="cellInnerDiv" id="outside-badge"><div data-testid="UserCell"><a href="/maker_four">Maker Four</a></div><span data-testid="userFollowIndicator">Te sigue</span></div>
+      <div data-testid="cellInnerDiv" id="ambiguous"><div data-testid="UserCell"><a href="/maker_five">Maker Five</a><a href="/maker_six">Maker Six</a></div></div>
+      <div data-testid="cellInnerDiv" id="bio-mention"><div data-testid="UserCell">
+        <div data-testid="UserAvatar-Container-maker_bio"><a href="/maker_bio" aria-label="Maker Bio avatar"></a></div>
+        <div><a href="/maker_bio">Maker Bio</a><a href="/maker_bio">@maker_bio</a></div>
+        <div>Building <a href="/sample_team">@sample_team</a> with <a href="/maker_friend">@maker_friend</a>.</div>
+      </div></div>
+      <div data-testid="cellInnerDiv" id="mutual-bio"><div data-testid="UserCell">
+        <div data-testid="UserAvatar-Container-maker_mutual"><a href="/maker_mutual"></a></div>
+        <div><a href="/maker_mutual">Maker Mutual</a><span data-testid="userFollowIndicator">Te sigue</span></div>
+        <div>Working with <a href="/sample_team">@sample_team</a>.</div>
+      </div></div>
+      <div data-testid="cellInnerDiv" id="ambiguous-avatars"><div data-testid="UserCell">
+        <div data-testid="UserAvatar-Container-maker_a"><a href="/maker_a"></a></div>
+        <div data-testid="UserAvatar-Container-maker_b"><a href="/maker_b"></a></div>
+        <a href="/maker_a">Maker A</a>
+      </div></div>
+      <div data-testid="cellInnerDiv" id="unknown-avatar"><div data-testid="UserCell">
+        <div data-testid="UserAvatar-Container-maker_unknown"><a href="https://example.test/maker_unknown"></a></div>
+        <div>Helping <a href="/sample_team">@sample_team</a>.</div>
+      </div></div>
+    </section>
+  </main>
+</body></html>

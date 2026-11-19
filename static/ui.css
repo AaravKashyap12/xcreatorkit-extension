@@ -1,0 +1,349 @@
+/* Extension tool pages: the reader system (docs/v1/EXTENSION-READER.md, tokens.css). A soft ground, white panels on
+   hairlines, ink for text and for what is selected or primary, blue ink only for figures read from X and the lines
+   that plot them. Buttons are keys: a face on a lip that lifts on hover and sinks when pressed. Every class is xck-
+   prefixed and colours come only from --xck-* tokens, so nothing here reaches the Ledger artwork, which keeps its own
+   unprefixed variables and classes. Form-control element rules are safe because the artwork has no controls. */
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+/* Body size and line height stay at their previous values: the Ledger preview inherits them. */
+body { margin: 0; background: var(--xck-canvas); color: var(--xck-text); font: 15px/1.45 var(--xck-font); font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; color-scheme: light; }
+a { color: var(--xck-text); text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+:is(button, input, select, a, summary, [tabindex]):focus-visible { outline: 2px solid var(--xck-focus); outline-offset: 2px; }
+
+/* ---------- Page frame ---------- */
+.xck-main { max-width: 1240px; margin: 0 auto; padding: 24px clamp(16px, 4vw, 40px) 64px; display: grid; gap: 16px; min-width: 0; }
+.xck-main.xck-narrow { max-width: 1080px; }
+.xck-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; }
+.xck-head-id { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; min-width: 0; }
+.xck-title { margin: 0; font-size: 26px; line-height: 1.15; font-weight: 800; font-stretch: 118%; letter-spacing: -0.035em; }
+.xck-head-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.xck-panel { background: var(--xck-surface); border: 1px solid var(--xck-border); border-radius: var(--xck-radius-panel); padding: 20px 24px; min-width: 0; }
+.xck-panel > :first-child { margin-top: 0; }
+.xck-panel > :last-child { margin-bottom: 0; }
+.xck-section-title { margin: 0 0 4px; font-size: 15px; line-height: 1.3; font-weight: 700; letter-spacing: -0.01em; }
+.xck-section-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; margin-bottom: 12px; }
+.xck-section-head .xck-section-title { margin: 0; }
+.xck-lede { margin: 0; font-size: 14px; color: var(--xck-text-2); max-width: 72ch; }
+.xck-muted { color: var(--xck-text-2); }
+.xck-small { font-size: 13px; }
+.xck-mono { font-family: var(--xck-mono); font-size: 12.5px; }
+.xck-caption { margin: 10px 0 0; font-size: 13px; line-height: 1.5; color: var(--xck-text-2); max-width: 80ch; }
+.xck-group-title { margin: 8px 0 0; font-size: 18px; font-weight: 800; font-stretch: 112%; letter-spacing: -0.025em; }
+.xck-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.xck-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.xck-context-block { display: grid; gap: 4px; }
+.xck-overview { padding: 0; overflow: hidden; }
+.xck-main-chart { padding: 18px 24px 20px; min-width: 0; }
+.xck-chart-block { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; min-width: 0; }
+.xck-values, .values-scroll, details.disclosure { min-width: 0; }
+.xck-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 16px; }
+.xck-steps { margin: 4px 0 16px; padding-left: 20px; display: grid; gap: 6px; max-width: 72ch; }
+
+/* ---------- Controls ---------- */
+/* Keys. A paper key is a white face with an ink edge on an ink lip; the primary key is an ink face on a soft lip.
+   Hover lifts one pixel, a press sinks the face onto the lip. --kl is the lip height, --kc its colour, --ke the edge. */
+button { --kl: 2px; --kc: var(--xck-ink); --ke: inset 0 0 0 1.5px var(--xck-ink);
+  font: inherit; font-size: 14px; font-weight: 650; letter-spacing: -0.005em; min-height: 36px; padding: 7px 14px; border: 0; border-radius: var(--xck-radius-control); cursor: pointer;
+  background: var(--xck-surface); color: var(--xck-text); box-shadow: 0 var(--kl) 0 0 var(--kc), var(--ke);
+  transition-property: translate, box-shadow, background-color, color; transition-duration: 140ms; transition-timing-function: var(--xck-ease); }
+@media (hover: hover) { button:hover { translate: 0 -1px; box-shadow: 0 calc(var(--kl) + 1px) 0 0 var(--kc), var(--ke); } }
+button:active { translate: 0 var(--kl); box-shadow: 0 0 0 0 var(--kc), var(--ke); transition-duration: 60ms; }
+button:focus-visible { outline: 2.5px solid var(--xck-focus); outline-offset: 3px; }
+button.xck-primary { --kl: 3px; --kc: var(--xck-lip); --ke: 0 0 0 0 transparent; background: var(--xck-ink); color: var(--xck-on-ink); }
+button:disabled, button:disabled:hover, button:disabled:active { cursor: not-allowed; translate: none; background: #e6e6e1; color: #74767b; box-shadow: none; }
+button.xck-danger { --kc: var(--xck-neg); --ke: inset 0 0 0 1.5px var(--xck-neg); color: var(--xck-neg); }
+/* Text buttons and controls that are not keys stay flat. */
+button.xck-link, button.xck-link:hover, button.xck-link:active { border: 0; padding: 0; min-height: 0; background: none; box-shadow: none; translate: none; color: var(--xck-text); font-weight: 600; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+button.xck-link:hover { color: var(--xck-text-2); }
+input, select { font: inherit; font-size: 14px; min-height: 36px; padding: 7px 10px; border: 1px solid var(--xck-control-border); border-radius: 8px; background: var(--xck-surface); color: var(--xck-text);
+  transition: border-color 140ms var(--xck-ease); }
+input:hover, select:hover { border-color: var(--xck-text-2); }
+input::placeholder { color: var(--xck-text-3); }
+select { appearance: none; padding-right: 30px; cursor: pointer;
+  background: var(--xck-surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%23131313' stroke-width='1.5'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E") right 11px center / 10px 6px no-repeat; }
+input[type=file] { padding: 5px 8px; font-size: 13px; }
+input[type=file]::file-selector-button { font: inherit; font-weight: 600; margin-right: 10px; padding: 4px 10px; border: 1px solid var(--xck-ink); border-radius: 6px; background: var(--xck-surface); color: var(--xck-text); cursor: pointer; }
+input[type=checkbox], input[type=radio] { accent-color: var(--xck-ink); width: 18px; height: 18px; min-height: 0; margin: 0; padding: 0; flex: none; cursor: pointer; }
+input[type=checkbox]:disabled { cursor: not-allowed; }
+label:has(> input[type=checkbox]) { cursor: pointer; }
+
+/* Segmented choice: buttons with aria-pressed on one track. Selected = an ink face; keyboard focus = a separate ring. */
+.xck-seg { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 2px; border: 1px solid var(--xck-border); border-radius: 10px; background: var(--xck-sunken); }
+.xck-seg > button, .xck-seg > button:hover, .xck-seg > button:active { min-height: 32px; padding: 4px 12px; border: 0; border-radius: 7px; background: none; box-shadow: none; translate: none; color: var(--xck-text-2); font-size: 13.5px; font-weight: 600; }
+.xck-seg > button:hover { background: var(--xck-surface); color: var(--xck-text); }
+.xck-seg > button[aria-pressed=true], .xck-seg > button[aria-pressed=true]:hover { background: var(--xck-ink); color: var(--xck-on-ink); }
+.xck-seg > button:focus-visible { outline-offset: 2px; }
+.xck-seg > button:disabled, .xck-seg > button:disabled:hover { background: none; border: 0; color: var(--xck-text-2); opacity: .5; }
+.xck-control { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-width: 0; }
+.xck-control-label { font-size: 13px; font-weight: 500; color: var(--xck-text-2); }
+.xck-check { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; font-size: 14px; }
+
+/* Fields: label, hint, the error naming the fix, then the input. Error group carries a bar on its left. */
+.xck-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 16px 20px; align-items: start; }
+.xck-field { display: grid; gap: 5px; align-content: start; min-width: 0; }
+.xck-field > label { font-size: 13px; font-weight: 500; color: var(--xck-text-2); }
+.xck-field-hint { font-size: 12.5px; color: var(--xck-text-2); }
+.xck-field-error { font-size: 13px; font-weight: 600; color: var(--xck-neg); }
+.xck-field:has(input[aria-invalid]) { padding-left: 12px; border-left: 3px solid var(--xck-neg); }
+input[aria-invalid], input[aria-invalid]:hover { border-color: var(--xck-neg); box-shadow: inset 0 0 0 1px var(--xck-neg); }
+.xck-form > button[type=submit] { justify-self: start; align-self: end; }
+.xck-form-status { min-height: 1.45em; margin: 10px 0 0; font-size: 13.5px; }
+.xck-ok { color: var(--xck-pos); } .xck-err { color: var(--xck-neg); } .xck-warn { color: var(--xck-warn); }
+
+/* Tables: mono figures, quiet rules. */
+.xck-table, table.values { width: 100%; border-collapse: collapse; font-size: 14px; }
+.xck-table :is(th, td), table.values :is(th, td) { text-align: left; padding: 8px 14px 8px 0; border-bottom: 1px solid var(--xck-border); }
+.xck-table th, table.values th { color: var(--xck-text-2); font-weight: 500; font-size: 12.5px; white-space: nowrap; }
+.xck-table tbody tr:hover td, table.values tbody tr:hover td { background: var(--xck-canvas); }
+.xck-table .xck-num, table.values .num { font-family: var(--xck-mono); font-size: 13px; text-align: right; }
+.xck-scroll { overflow-x: auto; }
+.values-scroll { overflow: auto; max-height: 360px; }
+table.values { min-width: 320px; }
+
+/* Disclosures (src/ui/dom.ts): a row with a name and what is inside; the chevron turns when open. */
+details.disclosure { border-top: 1px solid var(--xck-border); }
+details.disclosure > summary { display: flex; align-items: baseline; gap: 0 10px; min-height: 44px; padding: 11px 4px 11px 0; cursor: pointer; list-style: none; border-radius: 6px; }
+details.disclosure > summary::-webkit-details-marker { display: none; }
+details.disclosure > summary::before { content: "" / ""; flex: none; align-self: flex-start; margin: 7px 2px 0 4px; width: 7px; height: 7px; border-right: 1.5px solid var(--xck-text-2); border-bottom: 1.5px solid var(--xck-text-2); rotate: -45deg; transition: rotate 140ms var(--xck-ease); }
+details.disclosure[open] > summary::before { rotate: 45deg; }
+.disclosure-text { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; min-width: 0; }
+.disclosure-name { font-weight: 600; font-size: 15px; color: var(--xck-text); }
+.disclosure > summary:hover .disclosure-name { text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+.disclosure-note { font-size: 13px; color: var(--xck-text-2); }
+.disclosure-body { padding: 0 0 16px; min-width: 0; }
+.xck-values details.disclosure { border-top: 0; }
+.xck-values details.disclosure > summary { min-height: 36px; padding: 6px 4px 6px 0; }
+.xck-values .disclosure-name { font-size: 13.5px; font-weight: 600; color: var(--xck-text); }
+
+/* ---------- Charts (src/chart/xy.ts) ---------- */
+.xck-chart { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; min-width: 0; }
+.xck-readout { margin: 0; min-height: 1.5em; font-family: var(--xck-mono); font-size: 12.5px; line-height: 1.5; color: var(--xck-text); }
+.chart-box { min-width: 0; border-radius: 6px; cursor: crosshair; }
+.chart-box:focus-visible { outline-offset: 4px; }
+svg.chart { width: 100%; height: auto; display: block; }
+svg.chart .grid { stroke: var(--xck-grid); }
+svg.chart .zero { stroke: var(--xck-control-border); }
+svg.chart .axis { fill: var(--xck-text-2); font-family: var(--xck-mono); font-size: 12.5px; }
+svg.chart .ref { stroke: var(--xck-text-2); stroke-dasharray: 3 4; }
+svg.chart .ref-label { paint-order: stroke; stroke: var(--xck-surface); stroke-width: 4px; stroke-linejoin: round; fill: var(--xck-text); font-family: var(--xck-font); font-weight: 500; }
+svg.chart .focus-band { fill: var(--xck-sunken); }
+svg.chart .missing-mark { stroke: var(--xck-series-2); stroke-width: 1.5; stroke-dasharray: 2 3; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--xck-text-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: var(--c); }
+.legend .sw.line { height: 2px; width: 14px; border-radius: 0; }
+.legend .sw.line.dashed { background: repeating-linear-gradient(90deg, var(--c) 0 4px, transparent 4px 7px); }
+.legend .sw.outlined { background: var(--f); box-shadow: inset 0 0 0 1px var(--c); }
+/* Nothing to plot yet: the reader waits with the reason. */
+.xck-empty-chart { margin: 0; padding: 28px 20px; border: 1px dashed var(--xck-control-border); border-radius: 10px; background: var(--xck-canvas); color: var(--xck-text-2); font-size: 14px; }
+.xck-empty-chart::before { content: "" / ""; display: block; width: 36px; height: 22px; margin-bottom: 12px; color: var(--xck-text); background: var(--xck-face); }
+
+/* ---------- Figures ---------- */
+.xck-figure-label { font-size: 13px; font-weight: 500; color: var(--xck-text-2); }
+.xck-figure { font-size: 38px; font-weight: 800; font-stretch: 62%; line-height: 1.05; letter-spacing: 0; margin: 4px 0 2px; white-space: nowrap; }
+.xck-figure-sub { font-size: 13px; color: var(--xck-text-2); }
+.xck-figure-sub + .xck-figure-sub { margin-top: 2px; }
+.xck-up { color: var(--xck-pos); } .xck-down { color: var(--xck-neg); }
+.xck-stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 16px; }
+.xck-stat { min-width: 0; container-type: inline-size; }
+.xck-stat .xck-figure { font-size: min(38px, 21cqi); }
+
+/* Metric tiles: one radio group; the selected tile drives the main chart. */
+.xck-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; padding: 0; margin: 0; border: 0; border-bottom: 1px solid var(--xck-border); }
+.xck-tile { position: relative; display: block; min-width: 0; padding: 14px 16px 16px; cursor: pointer; container-type: inline-size; border-radius: 8px 8px 0 0; }
+.xck-tile + .xck-tile::before { content: "" / ""; position: absolute; left: 0; top: 16px; bottom: 16px; width: 1px; background: var(--xck-border); }
+.xck-tile input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; margin: 0; cursor: pointer; }
+.xck-tile:hover { background: var(--xck-canvas); }
+.xck-tile:has(input:checked) { background: var(--xck-canvas); }
+.xck-tile:has(input:checked)::after { content: "" / ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; background: var(--xck-ink); border-radius: 2px; }
+.xck-tile:has(input:checked) + .xck-tile::before, .xck-tile:has(input:checked)::before { display: none; }
+.xck-tile:has(input:focus-visible) { outline: 2px solid var(--xck-focus); outline-offset: -2px; }
+.xck-tile:has(input:disabled) { cursor: not-allowed; }
+.xck-tile:has(input:disabled) input { cursor: not-allowed; }
+.xck-tile .xck-figure { font-size: min(38px, 20cqi); }
+
+/* Bar list: totals for the range, values right-aligned. */
+.xck-barlist { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.xck-barlist li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; align-items: center; font-size: 14px; }
+.xck-barlist .xck-bar { grid-column: 1 / -1; height: 8px; border-radius: 4px; background: var(--xck-sunken); overflow: hidden; }
+.xck-barlist .xck-bar i { display: block; height: 100%; background: var(--xck-accent); border-radius: 2px; }
+.xck-barlist .xck-num { font-family: var(--xck-mono); font-size: 13px; }
+
+/* Tabs (Explore): roving tabindex, the selected tab underlined in ink. */
+.xck-tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--xck-border); margin: 0 0 16px; }
+.xck-tabs [role=tab], .xck-tabs [role=tab]:hover, .xck-tabs [role=tab]:active { flex: none; border: 0; border-radius: 6px 6px 0 0; background: none; box-shadow: none; translate: none; min-height: 40px; padding: 8px 12px; color: var(--xck-text-2); font-weight: 600; position: relative; }
+.xck-tabs [role=tab]:hover { color: var(--xck-text); background: var(--xck-canvas); }
+.xck-tabs [role=tab][aria-selected=true] { color: var(--xck-text); font-weight: 700; }
+.xck-tabs [role=tab][aria-selected=true]::after { content: "" / ""; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2.5px; background: var(--xck-ink); }
+.xck-tabs [role=tab]:focus-visible { outline-offset: -2px; }
+
+/* Notes: one line each, only when they apply. */
+.xck-notes { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; font-size: 13px; color: var(--xck-warn); }
+.xck-context { margin: 0; font-family: var(--xck-mono); font-size: 12.5px; line-height: 1.55; color: var(--xck-text-2); }
+.xck-context b { font-family: var(--xck-font); font-weight: 600; font-size: 13.5px; color: var(--xck-text); }
+.xck-bar-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; }
+.xck-reason { margin: 0; font-size: 13px; color: var(--xck-text-2); max-width: 52ch; }
+.xck-skeleton { background: var(--xck-sunken); border-radius: 8px; }
+/* Captured from X: only on numbers the extension read (product rule 6). The reader's brackets, in blue ink. */
+.xck-stamp { display: inline-flex; align-items: center; gap: 5px; color: var(--xck-accent); font: 600 12.5px/1.4 var(--xck-mono); white-space: nowrap; }
+.xck-stamp::before { content: "[" / ""; font-weight: 800; }
+.xck-stamp::after { content: "]" / ""; font-weight: 800; }
+.xck-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--xck-text-3); flex: none; display: inline-block; }
+.xck-status-dot.ready { background: var(--xck-pos); } .xck-status-dot.stale { background: var(--xck-warn); } .xck-status-dot.source_error { background: var(--xck-neg); }
+.xck-status { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--xck-text-2); }
+
+/* ---------- Editors: preview first, a control dock and the export beside it ---------- */
+.xck-stage { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 24px; background: var(--xck-sunken); border-radius: var(--xck-radius-panel); }
+.xck-stage .frame-scroll { display: flex; justify-content: safe center; overflow-x: auto; min-width: 0; }
+.xck-stage .xck-export { justify-content: center; margin-left: 0; }
+.xck-stage .frame { flex: none; position: relative; overflow: hidden; box-shadow: 0 24px 48px -28px rgba(19, 19, 19, 0.5); outline: 1px solid rgba(19, 19, 19, 0.1); }
+.xck-stage .frame .stage { position: absolute; top: 0; left: 0; }
+.xck-dock { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px 22px; }
+.xck-dock-group { display: grid; gap: 6px; min-width: 0; }
+.xck-dock-group > .xck-control-label { display: block; }
+.xck-export { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-left: auto; }
+.xck-export .xck-primary { padding-inline: 20px; }
+.xck-size { font-family: var(--xck-mono); font-size: 12.5px; color: var(--xck-text-2); }
+.xck-sources { display: grid; gap: 6px; font-size: 13px; color: var(--xck-text-2); }
+.xck-src { font-family: var(--xck-mono); font-size: 12.5px; color: var(--xck-text-2); }
+.xck-src b { font-family: var(--xck-font); font-weight: 600; color: var(--xck-text); }
+.xck-src.done b { color: var(--xck-pos); } .xck-src.failed b { color: var(--xck-neg); } .xck-src.skipped b { color: var(--xck-warn); } .xck-src.running b { color: var(--xck-text); }
+.xck-grant { margin: 0; padding: 10px 12px; border-radius: 8px; background: color-mix(in srgb, var(--xck-warn) 9%, var(--xck-surface)); border: 1px solid color-mix(in srgb, var(--xck-warn) 35%, var(--xck-surface)); color: var(--xck-text); font-size: 13.5px; }
+.xck-diag summary { cursor: pointer; }
+.xck-diag ul { margin: 4px 0 0; padding-left: 18px; }
+.xck-private b { font-weight: 600; color: var(--xck-text); }
+.xck-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--xck-ink); color: var(--xck-on-ink); padding: 9px 16px; border-radius: 10px; font-size: 13.5px; font-weight: 600; }
+
+/* ---------- Analytics: filters, change colour, shares and the share dialog ---------- */
+.xck-filters { padding: 12px 16px; background: var(--xck-surface); border: 1px solid var(--xck-border); border-radius: var(--xck-radius-panel); }
+.xck-date { display: inline-flex; align-items: center; gap: 6px; }
+.xck-date input { min-width: 0; }
+.xck-filters .xck-field-error { flex-basis: 100%; margin: 0; }
+.xck-figure-sub.xck-change-up { color: var(--xck-pos); font-weight: 500; }
+.xck-figure-sub.xck-change-down { color: var(--xck-neg); font-weight: 500; }
+.xck-share-open { display: inline-flex; }
+/* Share image sits in every section head, so it is the quiet key: a thin edge and no lip until it is pointed at. */
+button.xck-share-btn { --kl: 0px; --ke: inset 0 0 0 1px var(--xck-control-border); min-height: 30px; padding: 4px 11px; font-size: 13px; font-weight: 600; }
+button.xck-share-btn:hover:not(:disabled) { --ke: inset 0 0 0 1.5px var(--xck-ink); }
+.xck-barlist-figs { display: inline-flex; align-items: baseline; gap: 12px; }
+.xck-share-pct { min-width: 5.5ch; text-align: right; font-family: var(--xck-mono); font-size: 12.5px; color: var(--xck-text-2); }
+.xck-explore { padding-top: 4px; padding-bottom: 4px; }
+.xck-explore > details.disclosure { border-top: 0; }
+.xck-explore > details.disclosure > .disclosure-body > .xck-tabs { margin-top: 4px; }
+dialog.xck-share { width: min(940px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 20px 24px; border: 1.5px solid var(--xck-ink); border-radius: var(--xck-radius-panel); background: var(--xck-surface); color: var(--xck-text); box-shadow: 0 24px 64px -24px rgba(19, 19, 19, 0.5); overflow: auto; }
+dialog.xck-share::backdrop { background: rgba(19, 19, 19, 0.5); }
+.xck-share-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+button.xck-share-close, button.xck-share-close:hover, button.xck-share-close:active { min-height: 36px; width: 36px; padding: 0; font-size: 20px; line-height: 1; background: none; box-shadow: none; translate: none; }
+button.xck-share-close:hover { background: var(--xck-sunken); }
+.xck-share-lede { margin: 2px 0 14px; font-size: 13.5px; color: var(--xck-text-2); max-width: 72ch; }
+.xck-share-frame { position: relative; overflow: hidden; border-radius: 10px; background: var(--xck-sunken); outline: 1px solid var(--xck-border); }
+.xck-share-scale { position: absolute; top: 0; left: 0; width: 1200px; height: 675px; transform-origin: top left; }
+.xck-share-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin-top: 14px; }
+.xck-share-buttons { margin-left: auto; }
+.xck-share-status { min-height: 1.45em; margin: 10px 0 0; font-size: 13.5px; }
+
+/* ---------- Analytics look (body.xck-an): white cards on the soft ground, the blue-ink line, light shading ----------
+   Scoped so Rewards, Ledger and the other tools keep their own look. The selected metric is held by an ink edge;
+   keyboard focus is the separate focus ring outside it. */
+.xck-an { background: var(--xck-an-canvas); }
+.xck-an :is(.xck-panel, .xck-filters, .xck-main-chart, .xck-tile) { border: 1px solid var(--xck-border); border-radius: 14px; background: var(--xck-surface); }
+/* Filters are a toolbar on the ground, each control under its own small label; a hairline closes the toolbar. */
+.xck-an .xck-filters { align-items: flex-start; gap: 14px 28px; padding: 2px 0 16px; border: 0; border-bottom: 1px solid var(--xck-border); border-radius: 0; background: none; }
+.xck-an .xck-filters .xck-control { gap: 6px 10px; }
+/* width:0 with min-width:100% puts the label and any reason on their own line without widening the control. */
+.xck-an .xck-filters .xck-control-label { flex-basis: 100%; width: 0; min-width: 100%; white-space: nowrap; font: 500 12.5px/1.3 var(--xck-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--xck-text-2); }
+.xck-an .xck-filters .xck-date .xck-control-label { flex-basis: auto; width: auto; min-width: 0; }
+.xck-an .xck-filters .xck-reason { flex-basis: 100%; width: 0; min-width: min(100%, 30ch); }
+.xck-an .xck-filters select, .xck-an .xck-filters input[type=date] { background-color: var(--xck-surface); }
+/* What was read: one mark per UTC day of the range. Blue ink = captured, half = read while the day was in progress,
+   a dashed outline = not captured. Then the same facts in words. */
+.xck-an .xck-context-block { gap: 8px; }
+.xck-cover { display: flex; flex-wrap: wrap; gap: 2px; max-width: 100%; }
+.xck-cover i { flex: none; width: 8px; height: 16px; border-radius: 1.5px; background: var(--xck-accent); }
+.xck-cover i.part { background: linear-gradient(to top, var(--xck-accent) 50%, transparent 0); box-shadow: inset 0 0 0 1.5px var(--xck-accent); }
+.xck-cover i.gap { background: none; box-shadow: inset 0 0 0 1px var(--xck-control-border); opacity: .7; }
+.xck-cover.dense { gap: 1px; } .xck-cover.dense i { width: 4px; height: 14px; border-radius: 1px; }
+.xck-cover.densest { gap: 1px; } .xck-cover.densest i { width: 2px; height: 12px; border-radius: 0; }
+.xck-cover.densest i.gap { box-shadow: none; background: var(--xck-border); }
+.xck-an .xck-overview { display: grid; gap: 12px; padding: 0; overflow: visible; background: none; border: 0; box-shadow: none; }
+.xck-an .xck-main-chart { padding: 20px 24px 20px; }
+.xck-an .xck-main-chart .xck-section-title { font-size: 18px; font-weight: 800; font-stretch: 112%; letter-spacing: -0.025em; }
+.xck-an .xck-section-title { font-weight: 700; }
+.xck-an .xck-breakdowns .xck-panel { padding: 20px 22px; }
+.xck-an .xck-seg { border-color: transparent; background: var(--xck-sunken); border-radius: 9px; }
+.xck-an .xck-seg > button { color: var(--xck-text-2); }
+.xck-an .xck-seg > button:hover { background: color-mix(in srgb, var(--xck-surface) 70%, transparent); color: var(--xck-text); }
+.xck-an .xck-seg > button[aria-pressed=true], .xck-an .xck-seg > button[aria-pressed=true]:hover { background: var(--xck-ink); color: var(--xck-on-ink); }
+.xck-an .xck-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; border: 0; }
+.xck-an .xck-tile { display: flex; flex-direction: column; padding: 16px 18px 14px; border-radius: 14px; transition: border-color 140ms var(--xck-ease), box-shadow 140ms var(--xck-ease), translate 140ms var(--xck-ease); }
+/* The tile's name is a printed label; on the plotted metric the reader's brackets close around it in blue ink. */
+.xck-an .xck-tile .xck-figure-label { font: 500 12.5px/1.3 var(--xck-mono); letter-spacing: .04em; text-transform: uppercase; }
+.xck-an .xck-tile:has(input:checked) .xck-figure-label { color: var(--xck-accent); font-weight: 650; }
+.xck-an .xck-tile:has(input:checked) .xck-figure-label::before { content: "[ " / ""; }
+.xck-an .xck-tile:has(input:checked) .xck-figure-label::after { content: " ]" / ""; }
+.xck-an .xck-tile + .xck-tile::before, .xck-an .xck-tile:has(input:checked)::after { display: none; }
+.xck-an .xck-tile:hover { background: var(--xck-surface); border-color: var(--xck-control-border); }
+@media (hover: hover) { .xck-an .xck-tile:not(:has(input:checked)):not(:has(input:disabled)):hover { translate: 0 -1px; border-color: var(--xck-ink); } }
+.xck-an .xck-tile:has(input:checked) { background: var(--xck-surface); border-color: var(--xck-ink); box-shadow: inset 0 0 0 1px var(--xck-ink), 0 3px 0 0 var(--xck-ink); }
+.xck-an .xck-tile:has(input:focus-visible) { outline: 2px solid var(--xck-focus); outline-offset: 3px; }
+.xck-an .xck-tile .xck-figure { font-size: min(42px, 21cqi); font-weight: 800; margin: 6px 0 6px; color: var(--xck-text); }
+.xck-an .xck-tile .xck-figure.xck-up { color: var(--xck-pos); } .xck-an .xck-tile .xck-figure.xck-down { color: var(--xck-neg); }
+.xck-an .xck-figure-sub.xck-change { display: inline-block !important; align-self: flex-start; margin: 0 0 4px; padding: 2px 8px; border-radius: 6px; font-size: 12.5px; line-height: 1.4; font-weight: 600; background: var(--xck-sunken); color: var(--xck-text-2); }
+.xck-an .xck-figure-sub.xck-change-up { background: var(--xck-an-pos-soft); color: var(--xck-pos); }
+.xck-an .xck-figure-sub.xck-change-down { background: var(--xck-an-neg-soft); color: var(--xck-neg); }
+.xck-an .xck-spark { display: block; width: 100%; height: 32px; margin-top: auto; padding-top: 10px; box-sizing: content-box; overflow: visible; }
+.xck-an .xck-spark .spark-zero { stroke: var(--xck-an-axis); stroke-dasharray: 2 3; }
+/* Charts on the page (not the share image, which states its own look): a dotted grid, a bold blue-ink line for
+   the range and a thin grey one for the period before it, and the readout as a window on the ground. */
+.xck-an svg.chart .grid { stroke: var(--xck-grid); }
+.xck-an svg.chart:not(.xck-sc svg) .grid { stroke: var(--xck-an-axis); stroke-dasharray: 1 5; stroke-linecap: round; }
+.xck-an svg.chart:not(.xck-sc svg) .series-line { stroke-width: 2.5px; }
+.xck-an svg.chart:not(.xck-sc svg) .series-line.quiet { stroke-width: 1.5px; }
+.xck-an .xck-readout { padding: 7px 10px; border-radius: 6px; background: var(--xck-canvas); }
+.xck-an .legend:not(.xck-sc .legend) { gap: 6px 18px; }
+.xck-an .legend:not(.xck-sc .legend) .sw.line { height: 3px; width: 16px; border-radius: 2px; }
+.xck-an svg.chart .zero { stroke: var(--xck-an-axis); }
+.xck-an svg.chart .axis { fill: var(--xck-text-3); }
+.xck-an svg.chart .focus-band { fill: color-mix(in srgb, var(--xck-an-line) 8%, transparent); }
+.xck-an .xck-barlist .xck-bar { height: 6px; border-radius: 3px; background: var(--xck-sunken); }
+.xck-an .xck-barlist .xck-bar i { background: var(--xck-an-line); border-radius: 3px; }
+.xck-an .xck-values .disclosure-name { color: var(--xck-text); }
+.xck-an .xck-share-frame { background: var(--xck-an-canvas); }
+
+@media (max-width: 900px) {
+  .xck-an .xck-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+}
+@media (max-width: 760px) {
+  .xck-an .xck-tile { padding: 14px 14px 12px; }
+  .xck-an .xck-main-chart { padding: 14px 14px 16px; }
+  .xck-an .xck-breakdowns .xck-panel { padding: 16px; }
+}
+@media (max-width: 359px) {
+  .xck-an .xck-tiles { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .xck-an .xck-tile { transition: none; }
+  .xck-an .xck-tile:hover { translate: none !important; }
+}
+
+@media (max-width: 760px) {
+  .xck-share-buttons { margin-left: 0; }
+  dialog.xck-share { padding: 16px; }
+  .xck-filters { padding: 12px; }
+  .xck-main { padding: 18px 14px 48px; gap: 12px; }
+  .xck-panel { padding: 16px; }
+  .xck-overview { padding: 0; }
+  .xck-main-chart { padding: 14px 14px 16px; }
+  .xck-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .xck-tile:nth-child(3)::before { display: none; }
+  .xck-export { margin-left: 0; }
+  .xck-stage { padding: 14px; }
+}
+@media (max-width: 359px) {
+  .xck-tiles { grid-template-columns: minmax(0, 1fr); }
+  .xck-tile::before { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  button, input, select, details.disclosure > summary::before { transition: none; }
+  dialog.xck-share { animation: none; }
+}

@@ -1,0 +1,73 @@
+name: CI
+run-name: CI · ${{ github.event.pull_request.base.sha || github.sha }}
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  # Supersede stale PR builds. Every main push and manual run owns its browser coverage.
+  group: ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - if: github.event_name != 'push'
+        run: npx --no-install playwright install --with-deps chromium
+      - if: github.event_name != 'push'
+        shell: bash
+        run: |
+          mkdir -p verification
+          for verifier in scripts/verify-*.mjs; do
+            [[ "$verifier" == scripts/verify-release-package.mjs ]] && continue
+            node "$verifier"
+          done
+  security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Audit production dependency lockfile
+        run: npm audit --omit=dev --audit-level=high
+      - name: Scan commits for secrets
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir=$(mktemp -d)
+          curl --fail --silent --show-error --location https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz -o "$dir/gitleaks.tar.gz"
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  $dir/gitleaks.tar.gz" | sha256sum --check --strict
+          tar -xzf "$dir/gitleaks.tar.gz" -C "$dir" gitleaks
+          if [[ -n "$BASE_SHA" ]]; then
+            "$dir/gitleaks" git . --redact --log-opts="$BASE_SHA..HEAD"
+          else
+            "$dir/gitleaks" git . --redact
+          fi

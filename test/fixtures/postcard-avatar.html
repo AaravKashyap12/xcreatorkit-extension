@@ -1,0 +1,52 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+body { margin:0; font:15px Arial, sans-serif; background:#fff }
+article { position:relative; display:block; padding:12px 16px 12px 76px; border-bottom:1px solid #ddd; min-height:72px }
+[data-testid="Tweet-User-Avatar"] { position:absolute; left:16px; top:12px; width:48px; height:48px }
+[data-testid^="UserAvatar-Container-"] { width:48px; height:48px; border-radius:50%; overflow:hidden }
+[data-testid^="UserAvatar-Container-"] img { display:block; width:48px; height:48px }
+#cover { position:absolute; left:10px; top:0; width:70px; height:30px; background:rgba(255,255,255,.9) }
+#far { margin-top:1400px }
+</style></head><body>
+<!-- Synthetic posts for profile-photo capture. Photos load from a test route; nothing here is a real account. -->
+<article data-testid="tweet" id="photo">
+  <div data-testid="Tweet-User-Avatar"><div data-testid="UserAvatar-Container-photouser"><img alt="" src="https://pbs.twimg.com/profile_images/fixture/quadrants.png"></div></div>
+  <div data-testid="User-Name"><a href="/photouser">Photo Person</a></div>
+  <a href="/photouser/status/501"><time datetime="2026-10-24T09:00:00Z">Oct 24</time></a>
+  <div data-testid="tweetText">A post with a real photo on screen.</div>
+  <button data-testid="reply" aria-label="0 Replies. Reply"></button>
+  <button data-testid="unretweet" aria-label="14 reposts. Repost"><span>14</span></button>
+  <button data-testid="unlike" aria-label="2345 Likes. Unlike"><span>2.3K</span></button>
+  <a href="/photouser/status/501/analytics" aria-label="45678 views. View post analytics"><span>45K</span></a>
+</article>
+<article data-testid="tweet" id="wrong">
+  <div data-testid="Tweet-User-Avatar"><div data-testid="UserAvatar-Container-someoneelse"><img alt="" src="https://pbs.twimg.com/profile_images/fixture/quadrants.png"></div></div>
+  <div data-testid="User-Name"><a href="/wronguser">Wrong Photo</a></div>
+  <a href="/wronguser/status/502"><time datetime="2026-10-24T09:00:00Z">Oct 24</time></a>
+  <div data-testid="tweetText">This photo belongs to another account.</div>
+</article>
+<article data-testid="tweet" id="order">
+  <div data-testid="User-Name"><a href="/orderuser">Order Person</a></div>
+  <a href="/orderuser/status/503"><time datetime="2026-10-24T09:00:00Z">Oct 24</time></a>
+  <div data-testid="tweetText">The only photo here comes after the words, like a quoted post.</div>
+  <div style="position:relative;height:56px"><div data-testid="Tweet-User-Avatar" style="top:4px"><div data-testid="UserAvatar-Container-orderuser"><img alt="" src="https://pbs.twimg.com/profile_images/fixture/quadrants.png"></div></div></div>
+</article>
+<article data-testid="tweet" id="covered">
+  <div data-testid="Tweet-User-Avatar"><div data-testid="UserAvatar-Container-covereduser"><img alt="" src="https://pbs.twimg.com/profile_images/fixture/quadrants.png"></div></div>
+  <div id="cover"></div>
+  <div data-testid="User-Name"><a href="/covereduser">Covered Person</a></div>
+  <a href="/covereduser/status/504"><time datetime="2026-10-24T09:00:00Z">Oct 24</time></a>
+  <div data-testid="tweetText">Something sits on top of this photo.</div>
+</article>
+<article data-testid="tweet" id="broken">
+  <div data-testid="Tweet-User-Avatar"><div data-testid="UserAvatar-Container-brokenuser"><img alt="" src="https://pbs.twimg.com/profile_images/fixture/missing.png"></div></div>
+  <div data-testid="User-Name"><a href="/brokenuser">Broken Photo</a></div>
+  <a href="/brokenuser/status/505"><time datetime="2026-10-24T09:00:00Z">Oct 24</time></a>
+  <div data-testid="tweetText">This photo never loaded.</div>
+</article>
+<article data-testid="tweet" id="far">
+  <div data-testid="Tweet-User-Avatar"><div data-testid="UserAvatar-Container-faruser"><img alt="" src="https://pbs.twimg.com/profile_images/fixture/quadrants.png"></div></div>
+  <div data-testid="User-Name"><a href="/faruser">Far Person</a></div>
+  <a href="/faruser/status/506"><time datetime="2026-10-24T09:00:00Z">Oct 24</time></a>
+  <div data-testid="tweetText">This post sits at the edge of the screen.</div>
+</article>
+</body></html>

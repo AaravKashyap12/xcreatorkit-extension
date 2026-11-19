@@ -1,0 +1,142 @@
+/* Growth receipt scenes. 1080×1350 artboards. Colourways set --field, --paper, --ink, --accent,
+   --stamp, --ref, --ref-bg and --extra on .art; layout, fonts and sizes never change.
+   Textures are injected as --tx-crumple / --tx-grain / --tx-grunge (data URLs) so PNG export works. */
+.art { position: relative; width: 1080px; height: 1350px; overflow: hidden; display: flex; flex-direction: column; align-items: center;
+  background: var(--field); font-family: 'Plex Mono', ui-monospace, monospace; line-height: normal; text-align: left; letter-spacing: normal; -webkit-font-smoothing: antialiased; box-sizing: border-box; }
+.art *, .art *::before, .art *::after { box-sizing: border-box; margin: 0; padding: 0; }
+.art .ref { position: absolute; left: 0; right: 0; bottom: 48px; text-align: center; font: 600 28px/1 'Plex Mono'; letter-spacing: .02em; color: var(--ref); }
+.art .ref.pill { left: 50%; right: auto; bottom: 34px; transform: translateX(-50%); padding: 14px 26px; border-radius: 999px; background: var(--ref-bg); white-space: nowrap; }
+
+/* ---------- paper ---------- */
+.art .drop { position: relative; }
+.art .paper { position: relative; color: var(--ink); background: var(--paper); padding: 46px 56px 40px; font-variant-numeric: lining-nums tabular-nums; }
+.art .paper::before { content: ''; position: absolute; inset: 0; background: var(--tx-grain); background-size: 400px; mix-blend-mode: multiply; opacity: .45; pointer-events: none; }
+.art .paper.crumple::after { content: ''; position: absolute; inset: 0; background: var(--tx-crumple) center / cover; mix-blend-mode: multiply; opacity: var(--crumple, .7); pointer-events: none; }
+.art .paper > * { position: relative; z-index: 1; }
+.art .paper > .light { position: absolute; inset: 0; z-index: 2; pointer-events: none; background: linear-gradient(115deg, rgba(255,255,255,.35), rgba(255,255,255,0) 38%, rgba(0,0,0,0) 62%, rgba(0,0,0,.07)); }
+
+/* ---------- thermal receipt grammar ---------- */
+.art .k { font-size: 21px; letter-spacing: .14em; text-align: center; }
+.art .hero { font-family: 'Archivo', sans-serif; font-weight: 900; font-stretch: 62%; letter-spacing: -.01em; text-align: center; line-height: .9; color: var(--hero, var(--ink)); white-space: nowrap; }
+.art .meta { font-size: 21px; line-height: 1.4; text-align: center; letter-spacing: .02em; }
+.art .period-detail { font: 600 18px/1.4 'Plex Mono'; text-align: center; margin-top: 10px; }
+.art.recap .hero { font-size: 100px; line-height: 1.05; letter-spacing: -.04em; word-spacing: .16em; }
+.art.recap.month .hero { font-size: 65px; }
+.art.s2.recap.week .hero { font-size: 80px; }
+.art.recap .items { font-size: 26px; }
+.art.recap .items tr:has(td:last-child[data-value*='·']) { font-size: 21px; }
+.art.s3.recap .hero { font-size: 92px; }
+.art.s3.recap.month .hero { font-size: 64px; }
+.art.s3.recap .period-detail { margin-bottom: 12px; }
+.art.s3.recap .check { font-size: 25px; }
+.art .sep { border: 0; border-top: 3px dashed currentColor; opacity: .5; margin: 20px 0; }
+.art .items { width: 100%; border-collapse: collapse; font-size: 30px; }
+.art .items th { font-size: 18px; font-weight: 400; letter-spacing: .12em; text-align: left; padding-bottom: 8px; opacity: .75; }
+.art .items th:last-child, .art .items td:last-child { text-align: right; }
+.art .items td { padding: 5px 0; font-weight: 700; white-space: nowrap; }
+.art .items td:first-child { width: 58px; font-weight: 400; opacity: .7; }
+.art .total { display: flex; justify-content: space-between; align-items: flex-end; }
+.art .total .lbl { font-size: 30px; font-weight: 700; letter-spacing: .08em; line-height: 1.1; padding-bottom: 12px; }
+.art .total .lbl small { display: block; font-size: 17px; font-weight: 400; letter-spacing: .1em; opacity: .7; margin-top: 4px; }
+.art .total .val { font-family: 'Archivo'; font-weight: 900; font-stretch: 62%; font-size: 100px; line-height: 1; white-space: nowrap; }
+.art .total .val small { font: 500 26px 'Plex Mono'; letter-spacing: 0; opacity: .55; margin-left: 10px; }
+.art .bar { display: flex; align-items: center; gap: 16px; margin-top: 12px; }
+.art .blocks { flex: 1; display: grid; grid-template-columns: repeat(25, 1fr); gap: 5px; }
+.art .blocks i { height: 24px; background: currentColor; opacity: .16; }
+.art .blocks i.on { opacity: 1; background: var(--spot, currentColor); }
+.art .bar b { font-size: 30px; }
+.art .eta { font-size: 30px; font-weight: 700; margin-top: 12px; letter-spacing: .04em; }
+.art .foot { display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+.art .code { display: flex; flex-direction: column; gap: 10px; }
+.art .barcode { display: flex; height: 80px; align-items: stretch; }
+.art .barcode i { display: block; background: currentColor; }
+.art .barcode i.gap { background: transparent; }
+.art .code small { font-size: 18px; letter-spacing: .3em; }
+.art .thanks { text-align: center; font-size: 24px; font-weight: 700; letter-spacing: .1em; margin-top: 14px; }
+
+/* ---------- rubber stamp: reserved slot, ink texture, never overlaps ---------- */
+.art .slot { flex: none; width: 270px; height: 150px; display: grid; place-items: center; }
+.art .stamp { color: var(--stamp); border: 7px double currentColor; border-radius: 10px; padding: 10px 18px 8px; text-align: center; transform: rotate(-8deg);
+  -webkit-mask-image: var(--tx-grunge); mask-image: var(--tx-grunge); -webkit-mask-size: 340px; mask-size: 340px; mask-mode: luminance; mix-blend-mode: multiply; }
+.art .stamp b { display: block; font: 700 30px/1.05 'Plex Mono'; letter-spacing: .06em; white-space: nowrap; }
+.art .stamp span { display: block; font: 700 15px/1.4 'Plex Mono'; letter-spacing: .06em; margin-top: 4px; white-space: nowrap; }
+.art .stamp.round { width: 176px; height: 176px; border-radius: 50%; display: grid; place-content: center; padding: 0; border-width: 8px; transform: rotate(-12deg); }
+.art .slot.empty { visibility: hidden; }
+
+/* ===================== 01 RECEIPTIFY ===================== */
+.s1 { --paper: #f3f2ee; --ink: #161616; --hero: var(--accent); --spot: var(--accent); background: radial-gradient(120% 90% at 50% 30%, color-mix(in srgb, var(--field), #fff 10%), color-mix(in srgb, var(--field), #000 14%)); }
+.s1 .drop { margin-top: 56px; filter: drop-shadow(0 34px 40px rgba(8, 14, 40, .45)) drop-shadow(0 3px 4px rgba(8, 14, 40, .3)); transform: rotate(-1.6deg); }
+.s1 .paper { width: 720px; }
+.s1 .hero { font-size: 214px; letter-spacing: -.02em; margin: 4px 0 10px; }
+
+/* ===================== 02 PRINTER ===================== */
+.s2 { --paper: #f7f4ec; --ink: #1a1a1a; --hero: var(--accent); --spot: var(--accent); --crumple: .35;
+  background: radial-gradient(120% 90% at 50% 20%, color-mix(in srgb, var(--field), #fff 12%), color-mix(in srgb, var(--field), #000 12%)); }
+.s2 .printer { position: relative; z-index: 3; margin-top: 26px; width: 900px; height: 136px; border-radius: 34px 34px 26px 26px;
+  background: linear-gradient(#45423f, #2a2826 55%, #161514); box-shadow: 0 22px 34px rgba(0,0,0,.4), 0 4px 6px rgba(0,0,0,.35), inset 0 2px 0 rgba(255,255,255,.2), inset 0 -6px 10px rgba(0,0,0,.35); }
+.s2 .printer::before { content: ''; position: absolute; left: 50px; right: 50px; bottom: 22px; height: 16px; border-radius: 8px; background: #070707; }
+.s2 .printer::after { content: ''; position: absolute; right: 58px; top: 38px; width: 14px; height: 14px; border-radius: 50%; background: #7dff8b; box-shadow: 0 0 12px #7dff8b; }
+.s2 .printer .brand { position: absolute; left: 56px; top: 30px; font: 600 18px 'Plex Mono'; letter-spacing: .3em; color: rgba(255,255,255,.38); }
+.s2 .drop { margin-top: -30px; z-index: 2; overflow: hidden; padding: 0 30px 60px; filter: drop-shadow(0 30px 34px rgba(0,0,0,.35)); }
+.s2 .paper { width: 780px; padding-top: 62px; }
+.s2 .paper .slotshade { position: absolute; left: 0; right: 0; top: 0; height: 70px; background: linear-gradient(rgba(0,0,0,.32), transparent); z-index: 2; }
+.s2 .hero { font-family: 'Martian Mono'; font-weight: 800; font-stretch: 112.5%; font-size: 124px; letter-spacing: -.07em; word-spacing: -.45em; line-height: 1; margin: 2px 0 8px; }
+
+/* ===================== 03 DINER GUEST CHECK ===================== */
+.s3 { justify-content: center; padding-bottom: 80px; --crumple: .35; background: radial-gradient(110% 80% at 50% 40%, color-mix(in srgb, var(--field), #fff 10%), color-mix(in srgb, var(--field), #000 25%)); }
+.s3 .drop { filter: drop-shadow(0 34px 40px rgba(0, 0, 0, .5)); transform: rotate(-1.2deg); }
+.s3 .paper { width: 760px; padding: 64px 50px 46px; font-family: 'Courier Prime'; }
+.s3 .perf { position: absolute; left: 0; right: 0; top: 18px; height: 12px; background: radial-gradient(circle, var(--field) 5px, transparent 6px) 0 0 / 26px 12px repeat-x; z-index: 2; }
+.s3 .top { display: flex; justify-content: space-between; align-items: baseline; color: var(--accent); font-weight: 700; }
+.s3 .top b { font-size: 34px; letter-spacing: .12em; }
+.s3 .top span { font-size: 28px; }
+.s3 .redrule { height: 4px; background: var(--accent); margin: 10px 0 18px; }
+.s3 .hero { font-family: 'Zilla Slab'; font-weight: 700; font-stretch: normal; font-size: 168px; letter-spacing: -.02em; text-align: left; color: var(--accent); margin-bottom: 14px; }
+.s3 table.check { width: 100%; border-collapse: collapse; border: 2px solid var(--extra); font-size: 30px; }
+.s3 .check td, .s3 .check th { border-bottom: 2px solid var(--extra); padding: 12px 16px; font-weight: 700; text-align: left; vertical-align: baseline; white-space: nowrap; }
+.s3 .check th { font-size: 17px; font-weight: 400; letter-spacing: .14em; opacity: .7; padding: 8px 16px; }
+.s3 .check td + td, .s3 .check th + th { border-left: 2px solid var(--extra); text-align: right; width: 210px; }
+.s3 .check tr.tot td { border-bottom: 0; padding-top: 16px; padding-bottom: 16px; vertical-align: middle; }
+.s3 .check tr.tot td:first-child small { display: block; font-size: 19px; font-weight: 400; opacity: .7; }
+.s3 .check tr.tot td:last-child { font-family: 'Zilla Slab'; font-size: 68px; font-weight: 700; line-height: 1; }
+.s3 .eta { font-size: 28px; }
+.s3 .foot { margin-top: 30px; align-items: center; }
+.s3 .script { font: 104px/1.15 'Yellowtail'; color: var(--accent); }
+.s3 .slot { width: 210px; height: 196px; }
+.s3 .stamp.round b { font-size: 24px; }
+.s3 .stamp.round span { font-size: 12px; }
+
+/* ===================== 04 CLIPPED GINGHAM ===================== */
+.s4 { --paper: #f6f1e5; --ink: #191714; --hero: var(--accent); --spot: var(--accent); --crumple: .55;
+  background-color: var(--field); background-image: linear-gradient(90deg, var(--extra) 50%, transparent 50%), linear-gradient(var(--extra) 50%, transparent 50%); background-size: 84px 84px; }
+.s4 .drop { margin-top: 58px; filter: drop-shadow(0 30px 36px rgba(10, 20, 60, .45)) drop-shadow(0 3px 4px rgba(10, 20, 60, .3)); transform: rotate(-2deg); }
+.s4 .paper { width: 740px; padding-top: 104px; padding-bottom: 34px; }
+.s4 .sep { margin: 14px 0; }
+.s4 .items td { padding: 3px 0; }
+.s4 .barcode { height: 70px; }
+.s4 .hero { font-family: 'Instrument Serif'; font-style: italic; font-weight: 400; font-stretch: normal; font-size: 146px; letter-spacing: -.02em; line-height: 1; margin: 0 0 12px; }
+.s4 .items td { font-weight: 500; }
+.s4 .total .val { font-family: 'Instrument Serif'; font-style: italic; font-weight: 400; font-stretch: normal; font-size: 100px; }
+.s4 .clip { position: absolute; z-index: 5; top: 12px; left: 50%; width: 176px; transform: translateX(-50%) rotate(-2deg); filter: drop-shadow(0 12px 12px rgba(10,20,60,.45)); }
+.s4 .sticker { position: absolute; z-index: 6; top: 70px; right: 56px; width: 200px; transform: rotate(12deg); filter: drop-shadow(0 8px 10px rgba(10,20,60,.35)); }
+
+/* ===================== 05 CARBON COPY ===================== */
+.s5 { --paper: #fbfaf7; --hero: var(--accent); --spot: var(--accent); --crumple: .45; }
+.s5::after { content: ''; position: absolute; inset: 0; background: var(--tx-crumple) center / cover; mix-blend-mode: multiply; opacity: .35; pointer-events: none; }
+.s5 .stack { position: relative; margin-top: 44px; z-index: 1; }
+.s5 .under { position: absolute; inset: 0; background: var(--extra); transform: rotate(4deg) translate(26px, 14px); box-shadow: 0 20px 30px rgba(0, 0, 0, .3); }
+.s5 .drop { filter: drop-shadow(0 26px 30px rgba(0, 0, 0, .35)) drop-shadow(0 2px 3px rgba(0, 0, 0, .25)); transform: rotate(-1.5deg); }
+.s5 .paper { width: 740px; }
+.s5 .k { font-size: 19px; letter-spacing: .08em; white-space: nowrap; }
+.s5 .paper .items td, .s5 .paper .eta, .s5 .paper .thanks, .s5 .total .lbl { text-shadow: 0 0 .6px color-mix(in srgb, var(--ink), transparent 30%); }
+.s5 .hero { font-family: 'Bricolage'; font-weight: 800; font-stretch: 75%; font-size: 196px; letter-spacing: -.045em; margin: 4px 0 8px; }
+.s5 .total .val { font-family: 'Bricolage'; font-weight: 800; font-stretch: 75%; letter-spacing: -.03em; }
+
+/* ===================== 06 POSTER ===================== */
+.s6 { --paper: #fbfaf6; --ink: #161616; --spot: var(--accent); --crumple: .6; }
+.s6 .pattern { position: absolute; z-index: 0; inset: -260px; transform: rotate(-9deg); display: flex; flex-direction: column; justify-content: center;
+  font: 900 150px/0.95 'Archivo'; font-stretch: 125%; letter-spacing: -.03em; color: var(--accent); white-space: nowrap; }
+.s6 .pattern div:nth-child(even) { transform: translateX(-210px); color: var(--extra); }
+.s6 .drop { margin-top: 50px; z-index: 1; filter: drop-shadow(0 34px 40px rgba(0, 0, 0, .35)) drop-shadow(0 3px 4px rgba(0, 0, 0, .22)); transform: rotate(2deg); }
+.s6 .paper { width: 700px; }
+.s6 .hero { font-size: 182px; margin: 6px 0 10px; }

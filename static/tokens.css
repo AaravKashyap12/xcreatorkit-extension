@@ -1,0 +1,85 @@
+/* Extension UI tokens: the reader system (docs/v1/EXTENSION-READER.md). Artwork keeps its own unprefixed variables
+   and its own faces, so XckGeist and XckGeistMono stay declared for the receipt stage and the cards. */
+@font-face { font-family:XckGeist; src:url(fonts/geist.woff2) format('woff2'); font-weight:200 800; font-display:swap }
+@font-face { font-family:XckGeistMono; src:url(fonts/geist-mono-latin.woff2) format('woff2'); font-weight:100 900; font-display:swap }
+/* Archivo: text at normal width, headlines wide (125%), printed figures narrow (62%). */
+@font-face { font-family:XckArchivo; src:url(fonts/archivo-latin-wdth.woff2) format('woff2'); font-weight:100 900; font-stretch:62% 125%; font-display:swap }
+/* Martian Mono, held at its narrow width (the single value clamps every use to 75%), which sets ten digits as wide as Geist Mono did. */
+@font-face { font-family:XckMartian; src:url(fonts/martian-mono-latin-wdth.woff2) format('woff2'); font-weight:100 800; font-stretch:75%; font-display:swap }
+/* Doto: the UTC readout in the bar, nothing else. */
+@font-face { font-family:XckDoto; src:url(fonts/doto-latin.woff2) format('woff2'); font-weight:100 900; font-display:swap }
+:root {
+  --xck-canvas:#f4f4f1;
+  --xck-surface:#ffffff;
+  --xck-sunken:#eaeae5;
+  --xck-text:#131313;
+  --xck-text-2:#55575c;
+  --xck-text-3:#66686d;
+  --xck-border:#deded8;
+  --xck-control-border:#85878c;
+  --xck-grid:#ecece7;
+  /* Blue ink: figures the extension read from X, and the lines that plot them. Controls are ink, never blue. */
+  --xck-accent:#2140c9;
+  --xck-accent-ink:#1a34a8;
+  --xck-accent-soft:#e8ecfb;
+  --xck-accent-line:var(--xck-accent);
+  --xck-on-accent:#ffffff;
+  --xck-series-2:#7b7d82;
+  --xck-pos:#0a6b3b;
+  --xck-neg:#b3261a;
+  --xck-warn:#855000;
+  --xck-focus:#131313;
+  --xck-font:XckArchivo,Arial,sans-serif;
+  --xck-mono:XckMartian,ui-monospace,Menlo,monospace;
+  --xck-lcd:XckDoto,XckMartian,ui-monospace,monospace;
+  --xck-radius-control:10px;
+  --xck-radius-panel:14px;
+  --xck-ease:cubic-bezier(.2,0,0,1);
+  /* Keys: an ink face on a lip. Paper keys carry an ink edge and an ink lip. */
+  --xck-ink:#131313;
+  --xck-on-ink:#ffffff;
+  --xck-lip:rgba(19,19,19,.3);
+  --xck-bar:#131313;
+  --xck-bar-text:#c9c9c4;
+  --xck-bar-line:#34353a;
+  --xck-lcd-glow:#b9f27c;
+  /* Analytics (body.xck-an): the same ground as every tool; the blue-ink line, a pale fill, a quiet frame. */
+  --xck-an-canvas:#f4f4f1;
+  --xck-an-line:#2140c9;
+  --xck-an-fill:#d2d9f6;
+  --xck-an-fill-2:#e2e2dd;
+  --xck-an-axis:#c9c9c2;
+  --xck-an-pos-soft:#e3f2e8;
+  --xck-an-neg-soft:#fbe9e6;
+  /* Navigation aliases preserve one source of palette values. */
+  --xck-surface-sunken:var(--xck-canvas);
+  --xck-surface-hover:var(--xck-sunken);
+  --xck-text-muted:var(--xck-text-2);
+  --xck-border-control:var(--xck-control-border);
+  --xck-danger:var(--xck-neg);
+  --xck-success:var(--xck-pos);
+  --xck-radius:var(--xck-radius-control);
+  --xck-font-mono:var(--xck-mono);
+  /* The reader's face drawn with gradients in the current colour, for empty states: 36 x 22px. */
+  --xck-face:linear-gradient(currentColor 0 0) 0 0 / 3px 100% no-repeat, linear-gradient(currentColor 0 0) 0 0 / 9px 3px no-repeat, linear-gradient(currentColor 0 0) 0 100% / 9px 3px no-repeat,
+    linear-gradient(currentColor 0 0) 100% 0 / 3px 100% no-repeat, linear-gradient(currentColor 0 0) 100% 0 / 9px 3px no-repeat, linear-gradient(currentColor 0 0) 100% 100% / 9px 3px no-repeat,
+    linear-gradient(currentColor 0 0) 12px 12px / 4px 4px no-repeat, linear-gradient(currentColor 0 0) 20px 12px / 4px 4px no-repeat;
+}
+
+/* ---------- The reader mark and the UTC readout (src/ui/reader.ts) ---------- */
+.xck-rd { display:inline-flex; align-items:center; gap:.14em; height:1em; font-size:20px; line-height:1; flex:none }
+.xck-rd .xck-arm { display:block; flex:none; width:.36em; height:1em; fill:var(--xck-rd-arm, currentColor) }
+.xck-rd .xck-arm-r { transform:scaleX(-1) }
+.xck-rd .xck-eye { display:block; flex:none; width:.17em; height:.17em; background:var(--xck-rd-eye, currentColor); transform-origin:50% 60%; animation:xck-blink 4.6s infinite }
+.xck-rd .xck-eye + .xck-eye { animation-delay:.05s }
+@keyframes xck-blink { 0%, 93%, 100% { transform:scaleY(1) } 96% { transform:scaleY(.1) } }
+/* While a read runs the eyes travel across the line. */
+.xck-rd.reading .xck-eye { animation:xck-scan .7s var(--xck-ease) infinite alternate }
+@keyframes xck-scan { from { transform:translateX(-.1em) } to { transform:translateX(.1em) } }
+.xck-utc { display:inline-flex; align-items:center; gap:8px; flex:none; height:30px; margin:0; padding:0 10px 0 9px; border-radius:8px; background:#070807; box-shadow:inset 0 0 0 1px #262826, inset 0 2px 4px rgba(0, 0, 0, .9);
+  font:900 14px/1 var(--xck-lcd); letter-spacing:.06em; color:var(--xck-lcd-glow); white-space:nowrap }
+.xck-utc i { width:5px; height:5px; border-radius:50%; background:currentColor; animation:xck-led 2s steps(2, jump-none) infinite }
+@keyframes xck-led { 50% { opacity:.35 } }
+@media (prefers-reduced-motion:reduce) {
+  .xck-rd .xck-eye, .xck-rd.reading .xck-eye, .xck-utc i { animation:none }
+}

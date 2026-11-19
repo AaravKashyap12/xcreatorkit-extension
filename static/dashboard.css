@@ -1,0 +1,46 @@
+/* Rewards pace: the measured reading first, its labelled straight-line pace next, setup last. Tokens from tokens.css.
+   The reading is set in the printed voice; it takes blue ink only when it carries the Captured from X mark. */
+.xck-hero { display: grid; gap: 10px; padding: 24px; }
+.xck-hero-label { font: 500 12.5px/1.4 var(--xck-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--xck-text-2); }
+.xck-hero-num { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; font-size: clamp(56px, 9vw, 92px); font-weight: 800; font-stretch: 62%; line-height: .95; letter-spacing: 0; overflow-wrap: anywhere; }
+.xck-hero:has(.xck-stamp) .xck-hero-num { color: var(--xck-accent); }
+/* No reading yet: the reader waits. */
+.xck-hero-empty::before { content: "" / ""; width: 36px; height: 22px; color: var(--xck-text); background: var(--xck-face); }
+.xck-approx { font: 500 12.5px/1.4 var(--xck-mono); letter-spacing: 0; color: var(--xck-text-2); }
+/* The meter is a ruler: a tick every tenth of the way to the target, filled in blue ink as far as the reading. */
+.xck-meter { position: relative; height: 14px; border-radius: 3px; background: var(--xck-sunken); overflow: hidden; }
+.xck-meter::after { content: "" / ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), var(--xck-surface) calc(10% - 1px) 10%); }
+.xck-meter-fill { height: 100%; background: var(--xck-accent); }
+.xck-meter-legend { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; font-family: var(--xck-mono); font-size: 13px; color: var(--xck-text-2); }
+.xck-hero-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; font-size: 13px; color: var(--xck-text-2); }
+.xck-callout { max-width: 72ch; margin: 4px 0 6px; }
+.xck-callout b { display: block; font-size: 22px; font-weight: 800; font-stretch: 112%; line-height: 1.2; letter-spacing: -0.03em; margin-bottom: 6px; }
+.xck-callout p { margin: 0; color: var(--xck-text-2); font-size: 14.5px; }
+.xck-callout.falling b { color: var(--xck-neg); }
+.xck-pace-basis { margin: 0 0 16px; font-family: var(--xck-mono); font-size: 12.5px; }
+.xck-panel > .xck-stat-row { padding-top: 14px; border-top: 1px solid var(--xck-border); }
+.xck-panel-tight { padding-block: 4px; }
+.xck-panel-tight details.disclosure { border-top: 0; }
+.xck-panel-tight details.disclosure > .disclosure-body > .xck-panel { border: 0; padding: 0; }
+.xck-health { margin: 0 0 6px; font-size: 14px; }
+.xck-health.ready b { color: var(--xck-pos); } .xck-health.stale b { color: var(--xck-warn); } .xck-health.source_error b { color: var(--xck-neg); }
+.xck-flags { margin: 4px 0 10px; padding-left: 18px; color: var(--xck-text-2); font-size: 13.5px; }
+.xck-setup { display: grid; gap: 10px; }
+.xck-setup > .xck-panel > section.xck-panel { border: 0; padding: 0 0 14px; border-radius: 0; }
+.xck-readings table { min-width: 760px; }
+.xck-form-block { display: grid; gap: 12px; }
+.xck-form-block > p { margin: 0; }
+.xck-inline-field { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; color: var(--xck-text-2); }
+.xck-inline-field input[type=number] { width: 84px; font-family: var(--xck-mono); }
+/* Share card: the preview on its stage, the few controls and the download beside it. */
+.xck-card-layout { display: grid; grid-template-columns: minmax(0, 432px) minmax(240px, 1fr); gap: 20px 32px; align-items: start; }
+.xck-card-stage { padding: 16px; border-radius: 10px; background: var(--xck-canvas); box-shadow: inset 0 0 0 1px var(--xck-border); }
+.xck-card-stage:has(> canvas[hidden]) { display: none; }
+.xck-card-stage:has(> canvas[hidden]) + .xck-card-controls { grid-column: 1 / -1; }
+.card-preview { display: block; width: 100%; height: auto; border-radius: 4px; box-shadow: 0 18px 40px -26px rgba(19, 19, 19, .5); }
+.xck-card-controls { display: grid; gap: 12px; justify-items: start; max-width: 400px; }
+.xck-card-controls p { margin: 0; }
+@media (max-width: 760px) {
+  .xck-card-layout { grid-template-columns: minmax(0, 1fr); }
+  .xck-hero { padding: 18px 16px; }
+}

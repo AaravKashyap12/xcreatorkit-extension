@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>X Creator Kit · Tools</title>
+  <link rel="stylesheet" href="tokens.css" />
+  <link rel="stylesheet" href="launcher.css" />
+</head>
+<body>
+  <main id="launcher">
+    <header class="strip"><p class="kit-name"><span id="kit-reader"></span>X Creator Kit</p><span id="kit-utc"></span></header>
+    <section id="tools-view" class="view" aria-labelledby="tools-title">
+      <h1 id="tools-title" class="sr-only">Choose a tool</h1>
+      <section class="capture-area" aria-label="Read data from X">
+        <button id="capture" type="button"><span id="capture-label">Read current X tab</span><span class="cap" aria-hidden="true"><i></i><i></i></span></button>
+        <div id="capture-status" role="status">Read saves loaded X figures, @handle and UTC capture time locally for charts and receipts.</div>
+        <p id="tab-note" hidden>To read numbers, open X Analytics, Rewards or your profile and click the X Creator Kit icon in the toolbar.</p>
+      </section>
+      <nav id="tool-list" aria-label="Kit tools"></nav>
+      <button id="following-open" class="setting-row" type="button" aria-controls="following-view">
+        <span class="setting-name">Following settings</span><span id="following-state" class="state">Off</span><span class="chevron" aria-hidden="true"></span>
+      </button>
+      <p id="settings-alert" role="alert" hidden></p>
+      <footer><span>Local storage · UTC</span><button id="tour-replay" type="button" aria-expanded="false" aria-controls="quick-tour" hidden>Quick tour</button></footer>
+    </section>
+
+    <section id="following-view" class="view" aria-labelledby="following-title" hidden>
+      <div class="view-head">
+        <button id="back" type="button" aria-label="Back to tools"><span class="back-arrow" aria-hidden="true"></span>Tools</button>
+        <h2 id="following-title" tabindex="-1">Following settings</h2>
+      </div>
+      <label class="switch-row" for="highlight"><span>Highlight non-follow-backs</span><input id="highlight" type="checkbox" role="switch" aria-describedby="following-status" /></label>
+      <div class="tint-note"><span class="tint-sample" aria-hidden="true"><i></i><b></b><b></b></span><p>Reads badges on your Following page to tint rows. Your handle and switch choice stay in this browser.</p></div>
+      <p id="following-status" role="status"></p>
+      <div id="handle-field" class="field">
+        <label for="handle">Your X handle</label>
+        <p id="handle-error" class="field-error" hidden></p>
+        <input id="handle" autocomplete="off" spellcheck="false" placeholder="@yourhandle" maxlength="16" />
+      </div>
+      <button id="open-following" type="button">Open your Following <span aria-hidden="true">↗</span></button>
+    </section>
+  </main>
+  <script src="launcher.js"></script>
+</body>
+</html>

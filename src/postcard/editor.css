@@ -1,0 +1,67 @@
+@font-face { font-family:PostGeist; src:url(fonts/geist.woff2) format('woff2'); font-weight:200 800 }
+@font-face { font-family:PostMono; src:url(fonts/geist-mono-latin.woff2) format('woff2'); font-weight:100 900 }
+
+/* Post to image: the card on its stage first, then one dock with the settings and the export. The reader system
+   (docs/v1/EXTENSION-READER.md, tokens.css): ink marks what is chosen, buttons are keys. Every editor class is xck-
+   prefixed; the card keeps its own classes, fonts and colours. */
+* { box-sizing:border-box }
+/* Body font and colour stay what the card preview has always inherited. */
+body { margin:0; background:var(--xck-canvas); color:#1b1a17; font-family:PostGeist,Arial,sans-serif; -webkit-font-smoothing:antialiased; color-scheme:light }
+.xck-post { max-width:1240px; margin:auto; padding:24px clamp(16px,3vw,40px) 64px; display:grid; grid-template-columns:minmax(0,1fr); gap:16px; color:var(--xck-text); font-family:var(--xck-font) }
+.xck-post > * { min-width:0 }
+.xck-post-head { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 14px }
+.xck-post-head h1 { margin:0; font-size:26px; line-height:1.15; font-weight:800; font-stretch:118%; letter-spacing:-.035em }
+.xck-post-head p { margin:0; color:var(--xck-text-2); font-size:14px }
+.xck-post-head .xck-post-note { flex-basis:100%; margin:4px 0 0; padding:8px 12px; border-radius:var(--xck-radius-control); background:var(--xck-sunken); color:var(--xck-text-2); font-size:13.5px; line-height:1.45 }
+.xck-post-stage { padding:24px; border-radius:var(--xck-radius-panel); background:var(--xck-sunken) }
+.xck-post-preview { min-height:320px; display:flex; justify-content:center; align-items:flex-start; overflow:hidden }
+.postcard-scale { transform-origin:top center; flex:none; box-shadow:0 30px 60px -30px rgba(19,19,19,.5) }
+.xck-post-dock { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px 24px; align-items:start; padding:18px 22px; background:var(--xck-surface); border:1px solid var(--xck-border); border-radius:var(--xck-radius-panel) }
+.xck-post-controls { display:flex; flex-wrap:wrap; align-items:flex-start; gap:16px 24px; min-width:0 }
+.xck-post-choices { border:0; padding:0; margin:0; min-width:0 }
+.xck-post-choices legend { padding:0; margin:0 0 8px; font:500 12.5px/1.3 var(--xck-mono); letter-spacing:.04em; text-transform:uppercase; color:var(--xck-text-2) }
+/* Named choices on one track; selected = an ink face, keyboard focus = a separate ring. */
+.xck-post-segments { display:flex; flex-wrap:wrap; gap:2px; padding:2px; border:1px solid var(--xck-border); border-radius:10px; background:var(--xck-sunken) }
+.xck-post-segments label { position:relative; display:flex; align-items:center; justify-content:center; min-height:32px; padding:4px 12px; border-radius:7px; font-size:13.5px; font-weight:600; color:var(--xck-text-2); cursor:pointer; white-space:nowrap }
+.xck-post-segments input { position:absolute; inset:0; width:100%; height:100%; margin:0; opacity:0; cursor:pointer }
+.xck-post-segments label:hover { color:var(--xck-text); background:var(--xck-surface) }
+.xck-post-segments label:has(input:checked) { background:var(--xck-ink); color:var(--xck-on-ink) }
+.xck-post-segments label:has(input:focus-visible) { outline:2px solid var(--xck-focus); outline-offset:2px }
+.xck-post-swatches { display:flex; flex-wrap:wrap; gap:8px; padding:2px 0 }
+.xck-post-swatches label { position:relative; margin:0 }
+/* The radio covers its swatch, so the visible circle is the control itself. */
+.xck-post-swatches input { position:absolute; inset:0; width:100%; height:100%; margin:0; opacity:0; cursor:pointer; z-index:1 }
+.xck-post-swatches span { width:32px; height:32px; border-radius:50%; display:block; box-shadow:inset 0 0 0 1px rgba(19,19,19,.22); transition:scale 140ms var(--xck-ease) }
+.xck-post-swatches label:hover span { scale:1.08 }
+.xck-post-swatches input:checked+span { box-shadow:inset 0 0 0 1px rgba(19,19,19,.22), 0 0 0 2px var(--xck-surface), 0 0 0 4px var(--xck-ink) }
+.xck-post-swatches input:focus-visible+span { outline:2px solid var(--xck-focus); outline-offset:5px }
+.xck-post-check { display:flex; align-items:center; gap:8px; min-height:36px; font-size:14px; cursor:pointer }
+.xck-post-check input { accent-color:var(--xck-ink); width:18px; height:18px; margin:0; cursor:pointer }
+.xck-post-actions { display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; justify-content:flex-end; padding-top:20px }
+/* Keys: a paper face with an ink edge on an ink lip; the export is the ink key. Hover lifts, a press sinks. */
+.xck-post button { --kl:2px; --kc:var(--xck-ink); --ke:inset 0 0 0 1.5px var(--xck-ink);
+  font:inherit; font-size:14px; font-weight:650; letter-spacing:-.005em; min-height:38px; border:0; background:var(--xck-surface); box-shadow:0 var(--kl) 0 0 var(--kc), var(--ke); color:var(--xck-text); border-radius:var(--xck-radius-control); padding:8px 16px; cursor:pointer;
+  transition:translate 140ms var(--xck-ease), box-shadow 140ms var(--xck-ease) }
+@media (hover:hover) { .xck-post button:enabled:hover { translate:0 -1px; box-shadow:0 calc(var(--kl) + 1px) 0 0 var(--kc), var(--ke) } }
+.xck-post button:enabled:active { translate:0 var(--kl); box-shadow:0 0 0 0 var(--kc), var(--ke); transition-duration:60ms }
+.xck-post button.xck-primary { --kl:3px; --kc:var(--xck-lip); --ke:0 0 0 0 transparent; background:var(--xck-ink); color:var(--xck-on-ink); padding-inline:22px }
+.xck-post button:disabled, .xck-post button.xck-primary:disabled { background:#e6e6e1; box-shadow:none; color:#74767b; cursor:not-allowed }
+.xck-post :is(button,input):focus-visible { outline:2.5px solid var(--xck-focus); outline-offset:3px }
+.xck-post-output { margin:0 0 0 4px; font:500 12.5px/1.3 var(--xck-mono); color:var(--xck-text-2) }
+.xck-post-feedback { grid-column:1 / -1; min-height:1.4em; margin:0; line-height:1.4; font-size:13.5px; color:var(--xck-text) }
+.xck-post-feedback:empty { display:none }
+.xck-post-feedback.error { padding:8px 12px; border-left:3px solid var(--xck-neg); background:color-mix(in srgb, var(--xck-neg) 6%, var(--xck-surface)); color:var(--xck-neg); font-weight:600 }
+
+/* First use and notices: what to do, in the order it happens. */
+.xck-post-intro { max-width:880px; display:block; padding-top:40px }
+.xck-post-intro h1 { margin:0 0 10px; font-size:30px; line-height:1.1; font-weight:800; font-stretch:118%; letter-spacing:-.035em }
+.xck-post-message { margin:0 0 14px; font-size:15px; line-height:1.5; max-width:60ch; color:var(--xck-text-2) }
+.xck-post-steps { list-style:none; max-width:680px; margin:24px 0 20px; padding:0; counter-reset:step; background:var(--xck-surface); border:1px solid var(--xck-border); border-radius:var(--xck-radius-panel) }
+.xck-post-steps li { display:grid; grid-template-columns:44px 1fr; gap:2px 10px; padding:16px 20px; border-bottom:1px solid var(--xck-border) }
+.xck-post-steps li:last-child { border-bottom:0 }
+.xck-post-steps li::before { counter-increment:step; content:counter(step) / ""; grid-row:1 / 3; display:grid; place-items:center; width:28px; height:28px; border-radius:7px; background:var(--xck-ink); color:var(--xck-on-ink); font:600 13px/1 var(--xck-mono) }
+.xck-post-steps b { font-size:16px; font-weight:700; letter-spacing:-.01em }
+.xck-post-steps span { color:var(--xck-text-2); font-size:14px }
+.xck-post-aside { font-size:13.5px }
+@media(max-width:760px) { .xck-post-dock { grid-template-columns:minmax(0,1fr) } .xck-post-choices { max-width:100% } .xck-post-segments label { white-space:normal; flex:1 1 auto } .xck-post-actions { justify-content:flex-start } .xck-post-stage { padding:12px } .xck-post-intro { padding-top:20px } }
+@media(prefers-reduced-motion:reduce) { * { scroll-behavior:auto!important; transition:none!important } .xck-post-swatches label:hover span { scale:none } }
