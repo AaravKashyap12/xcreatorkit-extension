@@ -11,7 +11,7 @@ npm run build
 npx playwright install chromium
 ```
 
-Run the browser verifier for the behavior you changed. For example, use `node scripts/verify-reply.mjs` for the side panel. See the [browser verification scripts](scripts/) for other tools. Browser tests use [synthetic fixtures](test/fixtures/).
+Run the browser verifier for the behavior you changed. For example, use `node scripts/verify-screenshot.mjs` for the screenshot editor. See the [browser verification scripts](scripts/) for other tools. Browser tests use [synthetic fixtures](test/fixtures/).
 
 ## Send a pull request
 

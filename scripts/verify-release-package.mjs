@@ -53,7 +53,7 @@ try {
     const granted = await worker.evaluate(() => chrome.permissions.getAll());
     check('install-time API permissions are a subset of the manifest list', granted.permissions.every((p) => manifest.permissions.includes(p)), JSON.stringify(granted));
     check('no host access granted at install', (granted.origins ?? []).length === 0, JSON.stringify(granted.origins));
-    for (const page of ['launcher', 'receipt', 'report', 'dashboard', 'analytics', 'postcard', 'reply']) {
+    for (const page of ['launcher', 'receipt', 'report', 'dashboard', 'analytics', 'postcard', 'screenshot']) {
       const p = await ctx.newPage();
       p.on('console', (m) => { if (m.type() === 'error') problems.push(`${page}: console ${m.text()}`); });
       p.on('pageerror', (e) => problems.push(`${page}: pageerror ${e.message}`));

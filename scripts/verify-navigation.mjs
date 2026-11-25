@@ -135,14 +135,25 @@ async function testInstallAndUpgrade() {
     await complete(profile, await installedWorker(profile));
     await profile.close();
     rmSync(join(root, 'profile'), { recursive: true, force: true });
-    writeFileSync(join(extension, 'manifest.json'), JSON.stringify({ ...manifest, version: '0.2.0' }));
-    writeFileSync(join(extension, 'background.js'), `chrome.runtime.onInstalled.addListener(({reason}) => {
-      if (reason === 'install') void chrome.storage.local.set({ 'xck:reply-consent': 1 });
+    writeFileSync(join(extension, 'manifest.json'), JSON.stringify({ ...manifest, version: '0.3.0', host_permissions: ['https://x.com/*'], optional_host_permissions: [], background: { service_worker: 'previous.js' } }));
+    writeFileSync(join(extension, 'previous.js'), `chrome.runtime.onInstalled.addListener(({reason}) => {
+      if (reason !== 'install') return;
+      chrome.scripting.registerContentScripts([{id:'xck-reply-target', js:['previous-target.js'], matches:['https://x.com/*']}])
+        .then(() => chrome.storage.local.set({'xck:reply-consent':1, 'xck:reply-facts':['fixture'], 'xck:reply-profile':{}, 'xck:reply-profile-draft':{}, 'keep-me':1}));
+
     });`);
+    writeFileSync(join(extension, 'previous-target.js'), '// old capture fixture');
     profile = await launch();
     const previous = await installedWorker(profile);
-    const before = await previous.evaluate(() => chrome.storage.local.get(null));
-    assert.deepEqual(before, { 'xck:reply-consent': 1 });
+    await previous.evaluate(async () => {
+      for (let i = 0; i < 50; i++) {
+        if ((await chrome.storage.local.get('keep-me'))['keep-me']) return;
+        await new Promise(resolve => setTimeout(resolve, 20));
+      }
+      throw Error('Upgrade fixture did not install');
+    });
+    assert.equal(await previous.evaluate(async () =>
+      (await chrome.scripting.getRegisteredContentScripts({ids:['xck-reply-target']})).length), 1);
     const id = new URL(previous.url()).host;
     await profile.close();
     cpSync('dist', extension, { recursive: true });
@@ -150,12 +161,21 @@ async function testInstallAndUpgrade() {
     const upgraded = await installedWorker(profile);
     assert.equal(new URL(upgraded.url()).host, id);
     assert.equal(await upgraded.evaluate(() => chrome.runtime.getManifest().version), manifest.version);
-    assert.deepEqual(await upgraded.evaluate(() => chrome.storage.local.get(null)), before);
+    await upgraded.evaluate(async () => {
+      for (let i = 0; i < 50; i++) {
+        const registered = await chrome.scripting.getRegisteredContentScripts({ids:['xck-reply-target']});
+        if (!registered.length && !(await chrome.storage.local.get('xck:reply-consent'))['xck:reply-consent']) return;
+        await new Promise(resolve => setTimeout(resolve, 20));
+      }
+    });
+    assert.equal(await upgraded.evaluate(async () =>
+      (await chrome.scripting.getRegisteredContentScripts({ids:['xck-reply-target']})).length), 0);
+    assert.deepEqual(await upgraded.evaluate(() => chrome.storage.local.get(null)), { 'keep-me': 1 });
     const anchor = await profile.newPage();
     const popup = await openRealPopup(upgraded, anchor, profile);
     assert(!popup.error, popup.error);
     await readyPopup(popup);
-    check('Upgrade preserves existing consent and shows only the manual tour entry', await popup.evaluate(() => document.querySelector('#quick-tour').hidden && !document.querySelector('#tour-replay').hidden));
+    check('Upgrade preserves other settings and shows only the manual tour entry', await popup.evaluate(() => document.querySelector('#quick-tour').hidden && !document.querySelector('#tour-replay').hidden));
     await popup.evaluate(() => document.querySelector('#tour-replay').click());
     check('An upgraded profile can replay the tour', await popup.evaluate(() => !document.querySelector('#quick-tour').hidden));
     await popup.close();
@@ -278,9 +298,9 @@ try {
   await replay.evaluate(() => Array.from(document.querySelectorAll('#quick-tour button')).find(b => b.textContent === 'Back').click());
   check('Back returns to Read', await replay.evaluate(() => document.querySelector('#capture').hasAttribute('data-tour-anchor')));
   await advance(); await advance();
-  check('Final step points to Reply drafter and keeps Done in view', await replay.evaluate(() => document.querySelector('[data-tour-anchor]').getAttribute('href') === 'reply.html' && document.querySelector('.tour-next').textContent === 'Done' && document.querySelector('.tour-next').getBoundingClientRect().bottom <= innerHeight));
+  check('Final step points to Screenshot editor and keeps Done in view', await replay.evaluate(() => document.querySelector('[data-tour-anchor]').getAttribute('href') === 'screenshot.html' && document.querySelector('.tour-next').textContent === 'Done' && document.querySelector('.tour-next').getBoundingClientRect().bottom <= innerHeight));
   await wait(200);
-  await replay.screenshot(`${shots}/popup-native-tour-reply.png`);
+  await replay.screenshot(`${shots}/popup-native-tour-screenshot.png`);
   await replay.key('Escape', 'Escape', 27);
   check('Escape dismisses the active tour and returns focus', await replay.evaluate(() => document.querySelector('#quick-tour').hidden && document.activeElement.id === 'tour-replay'));
   await replay.close();
@@ -316,7 +336,7 @@ try {
   check('Popup page: targets at least 24×24, rows at least 40px', audit.small.length === 0 && audit.rows.length === 7 && audit.rows.every(h => h >= 40), JSON.stringify(audit));
   check('Popup page: no visible text under 12.5px', audit.tiny.length === 0, JSON.stringify(audit.tiny));
   await page.screenshot({ path: `${shots}/launcher.png`, fullPage: true });
-  for (const [name, file] of [['Analytics', 'analytics.html'], ['Ledger', 'report.html'], ['Rewards pace', 'dashboard.html'], ['Receipts', 'receipt.html'], ['Post to image', 'postcard.html']]) {
+  for (const [name, file] of [['Analytics', 'analytics.html'], ['Ledger', 'report.html'], ['Rewards pace', 'dashboard.html'], ['Receipts', 'receipt.html'], ['Post to image', 'postcard.html'], ['Screenshot editor', 'screenshot.html']]) {
     const target = ctx.waitForEvent('page');
     await page.getByRole('link', { name, exact: false }).first().click();
     const opened = await target;
@@ -332,11 +352,6 @@ try {
     }
     await opened.close();
   }
-  // Reply drafting stays beside the current page; other tools retain their tab routes.
-  await page.evaluate(() => { globalThis.panelCalls=[]; chrome.sidePanel.open=async options=>{panelCalls.push(options);}; });
-  const tabCount=ctx.pages().length;
-  await page.getByRole('link',{name:'Reply drafter',exact:true}).first().click();
-  check('Reply drafter opens current-window side panel without a new tab', await page.evaluate(async()=>panelCalls.length===1 && panelCalls[0].windowId===(await chrome.windows.getCurrent()).id) && ctx.pages().length===tabCount);
   check('Browsing tools never triggers capture', !(await page.evaluate(async () => (await chrome.storage.session.get('xgd:run'))['xgd:run'])));
 
   // ---------- Following view: open, Back, focus ----------
@@ -452,7 +467,7 @@ try {
   });
   check('Strip shows the reader (two arms, two eyes), hidden from assistive technology', strip.arms === 2 && strip.eyes === 2 && strip.hidden === 'true' && strip.cap === 'true' && strip.stops === 0, JSON.stringify(strip));
   check('Strip shows the current time in UTC', /^UTC \d\d:\d\d$/.test(strip.utc) && strip.utc === strip.expected, JSON.stringify(strip));
-  check('Tools are grouped: a hairline starts Make (Receipts) and On X (Reply drafter)', JSON.stringify(await keyboard.evaluate(() => [...document.querySelectorAll('.tool-link.group-start strong')].map(el => el.textContent))) === JSON.stringify(['Receipts', 'Reply drafter']));
+  check('Tools are grouped: a hairline starts Make (Receipts) in the tools list', JSON.stringify(await keyboard.evaluate(() => [...document.querySelectorAll('.tool-link.group-start strong')].map(el => el.textContent))) === JSON.stringify(['Receipts']));
   // Hover closes the reader's brackets around a row; keyboard focus is the ring. The two are drawn differently.
   await keyboard.locator('.tool-link').nth(1).hover();
   await keyboard.waitForTimeout(250);
@@ -574,7 +589,7 @@ try {
   check('Desktop: current tool is a paper chip, without a focus ring', desk.currentBg === 'rgb(255, 255, 255)' && desk.currentRing === 'none', JSON.stringify(desk));
   const bar = await full.evaluate(() => { const mark = document.querySelector('.xck-wordmark .xck-rd'); return { arms: mark?.querySelectorAll('svg.xck-arm').length, eyes: mark?.querySelectorAll('.xck-eye').length, hidden: mark?.getAttribute('aria-hidden'), utc: document.querySelector('.xck-shell .xck-utc')?.textContent,
     groups: [...document.querySelectorAll('.xck-links li[data-group]')].map(li => `${li.dataset.group}:${li.textContent}`), bg: getComputedStyle(document.querySelector('.xck-shell')).backgroundColor }; });
-  check('Desktop: ink bar with the reader, the UTC readout and three groups', bar.arms === 2 && bar.eyes === 2 && bar.hidden === 'true' && /^UTC \d\d:\d\d$/.test(bar.utc) && bar.bg === 'rgb(19, 19, 19)' && JSON.stringify(bar.groups) === JSON.stringify(['Numbers:Analytics', 'Make:Receipts', 'On X:Reply drafter']), JSON.stringify(bar));
+  check('Desktop: ink bar with the reader, the UTC readout and three groups', bar.arms === 2 && bar.eyes === 2 && bar.hidden === 'true' && /^UTC \d\d:\d\d$/.test(bar.utc) && bar.bg === 'rgb(19, 19, 19)' && JSON.stringify(bar.groups) === JSON.stringify(['Numbers:Analytics', 'Make:Receipts', 'On X:Following settings']), JSON.stringify(bar));
   await full.locator('.xck-nav a', { hasText: 'Ledger' }).hover();
   await full.waitForTimeout(250);
   const hoverLook = await full.evaluate(() => { const a = [...document.querySelectorAll('.xck-nav a')].find(x => x.textContent === 'Ledger'); return { b: getComputedStyle(a).getPropertyValue('--b').trim(), bg: getComputedStyle(a).backgroundColor, ring: getComputedStyle(a).outlineStyle }; });

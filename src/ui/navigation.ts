@@ -1,4 +1,3 @@
-import { bindReplyPanelLinks } from '../reply/open';
 import { h } from './dom';
 import css from './navigation.css';
 import { reader, utcReadout } from './reader';
@@ -10,7 +9,7 @@ export const TOOLS = [
   { name: 'Rewards pace', href: 'dashboard.html', description: 'Verified impressions', group: 'Numbers' },
   { name: 'Receipts', href: 'receipt.html', description: 'Day, week or month', group: 'Make' },
   { name: 'Post to image', href: 'postcard.html', description: 'A post as an image', group: 'Make' },
-  { name: 'Reply drafter', href: 'reply.html', description: 'Draft beside your post', group: 'On X' },
+  { name: 'Screenshot editor', href: 'screenshot.html', description: 'Frame a screenshot', group: 'Make' },
   { name: 'Following settings', href: 'launcher.html#following', description: 'Follow-back highlighting', group: 'On X' },
 ] as const;
 
@@ -73,5 +72,4 @@ export function mountNavigation() {
     if (narrow.matches && (links.contains(active) || (lost && links.contains(lastFocus as Node | null)))) toggle.focus();
   });
   document.body.prepend(shell);
-  bindReplyPanelLinks(shell, () => setOpen(false));
 }

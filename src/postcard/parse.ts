@@ -49,7 +49,7 @@ const views = (article: Element, handle: string, id: string): string | null => {
   return countValue(el);
 };
 
-export function parsePost(article: Element, textOnly = false): ParseResult {
+export function parsePost(article: Element): ParseResult {
   if (!article.matches('article[data-testid="tweet"]')) return { ok: false, reason: 'Post article unavailable.' };
   const candidates = [...article.querySelectorAll('time[datetime]')].filter((n) => own(n, article)).map((time) => ({ time, link: time.closest('a[href]') }))
     .filter(({ link }) => own(link, article) && status(link!.getAttribute('href')));
@@ -70,16 +70,16 @@ export function parsePost(article: Element, textOnly = false): ParseResult {
   if (!postText) return { ok: false, reason: 'Post text unavailable.' };
   const rawDate = time?.getAttribute('datetime') ?? '';
   const utc = /(?:Z|[+-]\d{2}:\d{2})$/i.test(rawDate) && Number.isFinite(Date.parse(rawDate)) ? new Date(rawDate).toISOString() : null;
-  const img = textOnly ? undefined : [...article.querySelectorAll('[data-testid="Tweet-User-Avatar"] img')].find((n) => own(n, article)) as HTMLImageElement | undefined;
+  const img = [...article.querySelectorAll('[data-testid="Tweet-User-Avatar"] img')].find((n) => own(n, article)) as HTMLImageElement | undefined;
   // Remote avatar URLs never enter the export. Inline fixture images are allowed only as PNG/JPEG data URLs.
   const avatar = img?.src && /^data:image\/(?:png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(img.src) && img.src.length < 150_000 ? img.src : null;
   return { ok: true, post: {
     id, url: `https://x.com/${handle}/status/${id}`, author, handle, text: postText, utc,
     counts: {
-      replies: textOnly ? null : count(article, '[data-testid="reply"]'),
-      reposts: textOnly ? null : count(article, '[data-testid="retweet"], [data-testid="unretweet"]'),
-      likes: textOnly ? null : count(article, '[data-testid="like"], [data-testid="unlike"]'),
-      views: textOnly ? null : views(article, handle, id),
+      replies: count(article, '[data-testid="reply"]'),
+      reposts: count(article, '[data-testid="retweet"], [data-testid="unretweet"]'),
+      likes: count(article, '[data-testid="like"], [data-testid="unlike"]'),
+      views: views(article, handle, id),
     }, avatar,
   } };
 }
