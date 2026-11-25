@@ -8,7 +8,7 @@ export function mountWalkthrough(tools: HTMLElement, replay: HTMLButtonElement, 
   const steps = [
     { anchor: '#capture', after: '#capture-status', title: 'Save your X numbers', tip: 'Open X Analytics, Rewards or your profile, then choose Read current X tab.' },
     { anchor: 'a[href="analytics.html"]', title: 'See your growth', tip: 'Open Analytics for trends or Receipts for a shareable image.' },
-    { anchor: 'a[href="reply.html"]', title: 'Draft beside X', tip: 'Paste a post in Reply drafter. Edit and copy your reply from the side panel.' },
+    { anchor: 'a[href="screenshot.html"]', title: 'Frame a screenshot', tip: 'Drop or paste an image, choose a background and save your PNG.' },
   ];
   const count = h('p', { id: 'tour-count' });
   const title = h('h2', { id: 'tour-title', tabindex: '-1', 'aria-describedby': 'tour-count tour-tip' });

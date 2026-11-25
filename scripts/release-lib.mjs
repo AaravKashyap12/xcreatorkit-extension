@@ -5,10 +5,10 @@ import { readdirSync, readFileSync, lstatSync } from 'node:fs';
 import { join, relative, extname, posix } from 'node:path';
 import { createHash } from 'node:crypto';
 
-export const EXPECTED_PERMISSIONS = ['activeTab', 'contextMenus', 'scripting', 'sidePanel', 'storage'];
-export const EXPECTED_OPTIONAL_HOSTS = ['https://x.com/*', 'https://generativelanguage.googleapis.com/*'];
+export const EXPECTED_PERMISSIONS = ['activeTab', 'contextMenus', 'scripting', 'storage'];
+export const EXPECTED_OPTIONAL_HOSTS = ['https://x.com/*'];
 /** Scripts injected by the service worker with chrome.scripting; no manifest entry references them. */
-export const INJECTED_SCRIPTS = ['collector.js', 'followback.js', 'postcard-target.js', 'reply-target.js'];
+export const INJECTED_SCRIPTS = ['collector.js', 'followback.js', 'postcard-target.js'];
 /** URL hosts that may appear as text in shipped code. Navigation targets and comments only. */
 export const ALLOWED_URL_HOSTS = new Set(['x.com', 'www.w3.org', 'gsap.com', 'github.com']);
 const FORBIDDEN_JS = [
@@ -27,9 +27,10 @@ const FORBIDDEN_JS = [
 ];
 const FILE_RULES = [
   [/^manifest\.json$/, 'manifest'],
-  [/^(analytics|dashboard|launcher|postcard|reply|receipt|report)\.(html|js)$/, 'tool page or bundle'],
-  [/^(background|collector|followback|postcard-target|reply-target)\.js$/, 'worker or injected bundle'],
-  [/^(dashboard|launcher|tokens|ui)\.css$/, 'style'],
+  [/^(analytics|dashboard|launcher|postcard|screenshot|receipt|report)\.(html|js)$/, 'tool page or bundle'],
+  [/^(background|collector|followback|postcard-target)\.js$/, 'worker or injected bundle'],
+  [/^(dashboard|launcher|tokens|screenshot|ui)\.css$/, 'style'],
+  [/^backgrounds\/(indigo-moon|coral-evening|daylight-blue|peach-haze|silver-lining|rose-hour|rain-wash)\.webp$/, 'editor artwork'],
   [/^icons\/icon-(16|32|48|128)\.png$/, 'icon'],
   [/^fonts\/[A-Za-z0-9._-]+\.woff2$/, 'font'],
   [/^fonts\/OFL-[A-Za-z0-9._-]+\.txt$/, 'font licence'],
@@ -76,16 +77,17 @@ export function checkPackage(dir, { expectVersion } = {}) {
   for (const key of ['host_permissions', 'optional_permissions', 'content_scripts', 'web_accessible_resources', 'externally_connectable', 'update_url', 'key', 'commands', 'declarative_net_request', 'devtools_page', 'chrome_url_overrides', 'sandbox', 'omnibox', 'oauth2']) {
     if (key in manifest) fail(`manifest has unexpected "${key}"`);
   }
-  if (manifest.side_panel?.default_path !== 'reply.html?panel') fail('reply side panel path changed');
+  if (manifest.side_panel) fail('unexpected side panel');
   const csp = manifest.content_security_policy?.extension_pages ?? '';
-  for (const need of ["script-src 'self'", "connect-src https://generativelanguage.googleapis.com", "object-src 'self'"]) if (!csp.includes(need)) fail(`CSP lacks ${need}`);
-  if (/unsafe-|https?:|\*/.test(csp.replace('connect-src https://generativelanguage.googleapis.com;', ''))) fail(`CSP allows unsafe or remote sources: ${csp}`);
+  for (const need of ["script-src 'self'", "connect-src 'none'", "object-src 'self'"]) if (!csp.includes(need)) fail(`CSP lacks ${need}`);
+  if (/unsafe-|https?:|\*/.test(csp)) fail(`CSP allows unsafe or remote sources: ${csp}`);
   if (!manifest.name || !manifest.description || manifest.description.length > 132) fail('name missing, or description empty/over 132 characters');
 
   const referenced = [
     manifest.background?.service_worker, manifest.action?.default_popup,
     ...Object.values(manifest.icons ?? {}), ...Object.values(manifest.action?.default_icon ?? {}),
-    ...INJECTED_SCRIPTS,
+    ...INJECTED_SCRIPTS, 'screenshot.html',
+    ...['indigo-moon', 'coral-evening', 'daylight-blue', 'peach-haze', 'silver-lining', 'rose-hour', 'rain-wash'].map(name => 'backgrounds/' + name + '.webp'),
   ].filter(Boolean);
   for (const r of referenced) if (!names.has(r)) fail(`referenced file missing: ${r}`);
   if (manifest.background?.type === 'module') notes.push('service worker is a module');
@@ -95,9 +97,9 @@ export function checkPackage(dir, { expectVersion } = {}) {
     const text = ['.js', '.html', '.css'].includes(ext) ? readFileSync(join(dir, f.path), 'utf8') : null;
     if (text === null) continue;
     for (const url of text.matchAll(/https?:\/\/([A-Za-z0-9.-]+)/g)) {
-      if (!ALLOWED_URL_HOSTS.has(url[1].toLowerCase()) && !(f.path === 'reply.js' && ['generativelanguage.googleapis.com', 'aistudio.google.com'].includes(url[1].toLowerCase()))) fail(`${f.path}: URL host not allowed: ${url[1]}`);
+      if (!ALLOWED_URL_HOSTS.has(url[1].toLowerCase())) fail(`${f.path}: URL host not allowed: ${url[1]}`);
     }
-    if (ext === '.js') for (const [re, label] of FORBIDDEN_JS) if (re.test(text) && !(f.path === 'reply.js' && label === 'fetch()')) fail(`${f.path}: ${label}`);
+    if (ext === '.js') for (const [re, label] of FORBIDDEN_JS) if (re.test(text)) fail(`${f.path}: ${label}`);
     if (ext === '.html') {
       if (/<script(?![^>]*\ssrc=)/i.test(text)) fail(`${f.path}: inline script`);
       if (/\son[a-z]+\s*=/i.test(text)) fail(`${f.path}: inline event handler`);

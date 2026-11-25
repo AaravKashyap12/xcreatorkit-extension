@@ -1,6 +1,6 @@
 # Extension UI
 
-The toolbar puts **Read current X tab** first. The result appears beneath it so the user can see which source was read. Tools open from the chooser. The Reply drafter opens in Chrome’s side panel.
+The toolbar puts **Read current X tab** first. The result appears beneath it so the user can see which source was read. Tools open from the chooser. The screenshot editor opens in its own tab.
 
 Use the shared [design tokens](../../static/tokens.css) for task screens. The canvas is soft grey, panels are white, and controls use ink for text and selection. Blue identifies captured figures and their plotted lines. Give keyboard focus its own visible outline. Keep animated feedback usable when reduced motion is on.
 

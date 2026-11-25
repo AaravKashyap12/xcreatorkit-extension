@@ -1,0 +1,228 @@
+/* Screenshot editor: the reader system as an image workspace. Ink bar above, a paper head, a tool rail of keys,
+   a sunken stage where the canvas sits like a print, and a white inspector on a hairline. Selected = an ink face
+   or ink edge; keyboard focus = the separate ink ring from ui.css, offset outside the control. */
+body.ss { min-height: 100dvh; background: var(--xck-canvas); }
+.ss-app { --ss-head: 68px; display: grid; grid-template-rows: auto minmax(0, 1fr); height: calc(100dvh - 52px); min-height: 560px; }
+.ss-icon { width: var(--ss-ic, 20px); height: var(--ss-ic, 20px); flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- Head ---------- */
+.ss-head { display: flex; align-items: center; justify-content: space-between; gap: 10px 20px; flex-wrap: wrap; padding: 12px 20px; background: var(--xck-surface); border-bottom: 1px solid var(--xck-border); min-width: 0; }
+.ss-id { min-width: 0; }
+.ss-title { margin: 0; font-size: 22px; line-height: 1.1; font-weight: 800; font-stretch: 118%; letter-spacing: -.035em; }
+.ss-meta { margin: 4px 0 0; font: 500 12.5px/1.3 var(--xck-mono); color: var(--xck-text-2); overflow-wrap: anywhere; }
+.ss-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ss-actions > button, .ss-export-actions > button { display: inline-flex; align-items: center; gap: 7px; }
+.ss-pair { display: inline-flex; gap: 6px; margin-right: 6px; }
+button.ss-icon-key { width: 38px; min-height: 36px; padding: 0; display: inline-grid; place-items: center; }
+button.ss-small-key { width: 32px; min-height: 30px; --kl: 1px; }
+
+/* ---------- Work area ---------- */
+.ss-work { display: grid; grid-template-columns: 84px minmax(0, 1fr) 332px; min-height: 0; }
+
+/* Tool rail: keys stacked down the left edge. */
+.ss-tools { display: flex; flex-direction: column; gap: 8px; padding: 14px 10px; background: var(--xck-surface); border-right: 1px solid var(--xck-border); overflow-y: auto; }
+button.ss-tool { --kl: 2px; display: grid; justify-items: center; gap: 3px; min-height: 58px; padding: 8px 2px 6px; font-size: 12.5px; font-weight: 650; letter-spacing: 0; }
+button.ss-tool[aria-pressed=true] { --kc: var(--xck-lip); --ke: 0 0 0 0 transparent; background: var(--xck-ink); color: var(--xck-on-ink); }
+button.ss-tool:disabled { background: transparent; color: #8a8c90; box-shadow: inset 0 0 0 1px var(--xck-border); }
+
+/* Stage: a sunken ground with a quiet dot grid; the canvas sits on it like a sheet of paper. */
+.ss-stage { position: relative; display: grid; grid-template-rows: minmax(0, 1fr) auto; min-width: 0; min-height: 0; background: var(--xck-sunken); }
+.ss-board { position: relative; display: flex; overflow: auto; min-height: 0; padding: 40px; overscroll-behavior: contain;
+  background-color: var(--xck-sunken); background-image: radial-gradient(#cfcfc7 1px, transparent 1.2px); background-size: 14px 14px; }
+.ss-board > canvas { margin: auto; flex: none; display: block; touch-action: none; box-shadow: 0 1px 0 rgba(19,19,19,.08), 0 18px 40px -18px rgba(19,19,19,.35); background: #fff; }
+.ss-board > canvas:focus-visible { outline: 2.5px solid var(--xck-focus); outline-offset: 6px; }
+.ss-board > canvas.ss-drawing { cursor: crosshair; }
+.ss-board > canvas.ss-cropping { background: transparent; box-shadow: none; }
+.ss-board.ss-drag { box-shadow: inset 0 0 0 3px var(--xck-ink); }
+
+
+.ss-empty { margin: auto; flex: none; display: grid; place-items: center; background: var(--empty-bg, #dcdcd5); background-size: cover; }
+.ss-empty[hidden] { display: none; }
+.ss-drop { max-width: min(380px, 94%); box-sizing: border-box; }
+.ss-drop { padding: 28px 28px 22px; background: var(--xck-surface); border-radius: var(--xck-radius-panel); box-shadow: 0 0 0 1.5px var(--xck-ink), 0 4px 0 0 var(--xck-ink), 0 30px 60px -30px rgba(0,0,0,.5); text-align: left; }
+.ss-kicker, .ss-label, .ss-sublabel { margin: 0; font: 600 12.5px/1.3 var(--xck-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--xck-text-2); }
+.ss-drop h2 { margin: 8px 0 6px; font-size: 30px; line-height: 1.05; font-weight: 800; font-stretch: 120%; letter-spacing: -.04em; }
+.ss-drop p { margin: 0 0 18px; color: var(--xck-text-2); font-size: 14.5px; }
+.ss-drop .ss-limits { margin: 16px 0 0; padding-top: 12px; border-top: 1px dashed var(--xck-border); font: 500 12.5px/1.4 var(--xck-mono); color: var(--xck-text-3); }
+
+.ss-strip { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; padding: 8px 14px; background: var(--xck-surface); border-top: 1px solid var(--xck-border); min-width: 0; }
+.ss-hint { margin: 0; font-size: 13px; color: var(--xck-text-2); min-width: 0; }
+.ss-zoom { display: inline-flex; align-items: center; gap: 6px; flex: none; }
+button.ss-zoom-read, button.ss-zoom-read:hover, button.ss-zoom-read:active { --kl: 0px; min-height: 30px; min-width: 58px; padding: 2px 8px; font: 600 12.5px var(--xck-mono); box-shadow: inset 0 0 0 1px var(--xck-control-border); translate: none; }
+.ss-status { position: absolute; z-index: 3; left: 50%; top: 14px; translate: -50% 0; max-width: min(520px, calc(100% - 32px)); margin: 0; padding: 8px 14px; border-radius: 9px; background: var(--xck-ink); color: var(--xck-on-ink); font-size: 13.5px; font-weight: 550; pointer-events: none; }
+.ss-status:empty { display: none; }
+.ss-alert { position: absolute; z-index: 2; top: 12px; left: 12px; right: 12px; margin: 0; padding: 10px 14px; border-radius: 10px; background: var(--xck-surface); color: var(--xck-neg); font-size: 14px; font-weight: 650; box-shadow: inset 4px 0 0 var(--xck-neg), 0 0 0 1px var(--xck-border), 0 10px 24px -14px rgba(0,0,0,.4); }
+
+/* ---------- Inspector ---------- */
+.ss-inspector { display: flex; flex-direction: column; min-height: 0; background: var(--xck-surface); border-left: 1px solid var(--xck-border); }
+.ss-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin: 14px 16px 4px; padding: 2px; border: 1px solid var(--xck-border); border-radius: 10px; background: var(--xck-sunken); }
+.ss-tabs[hidden] { display: none; }
+.ss-tabs > button, .ss-tabs > button:hover, .ss-tabs > button:active { min-height: 34px; padding: 4px 6px; border-radius: 7px; background: none; box-shadow: none; translate: none; color: var(--xck-text-2); font-size: 13.5px; font-weight: 650; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.ss-tabs > button:hover { background: var(--xck-surface); color: var(--xck-text); }
+.ss-tabs > button[aria-selected=true] { background: var(--xck-ink); color: var(--xck-on-ink); }
+.ss-count { min-width: 20px; padding: 0 5px; border-radius: 999px; background: rgba(19,19,19,.1); font: 600 12.5px/18px var(--xck-mono); }
+.ss-tabs > button[aria-selected=true] .ss-count { background: rgba(255,255,255,.2); }
+.ss-panel { flex: 1; overflow-y: auto; padding: 4px 16px 20px; min-height: 0; }
+.ss-panel-title { margin: 6px 0 4px; font-size: 17px; font-weight: 800; font-stretch: 112%; letter-spacing: -.02em; }
+.ss-group { padding: 14px 0; border-bottom: 1px solid var(--xck-grid); display: grid; gap: 10px; }
+.ss-group:last-child { border-bottom: 0; }
+.ss-note { margin: 0; font-size: 12.5px; line-height: 1.45; color: var(--xck-text-2); }
+.ss-seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }
+.ss-seg > button { padding-inline: 6px; }
+
+.ss-slider { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 10px; }
+.ss-slider label { font-size: 13.5px; font-weight: 550; }
+.ss-num-wrap { display: inline-flex; align-items: center; gap: 4px; }
+.ss-unit { min-width: 14px; font: 600 12.5px var(--xck-mono); color: var(--xck-text-2); }
+input.ss-num { width: 62px; min-height: 28px; padding: 2px 6px; border-radius: 6px; text-align: right; font: 600 12.5px var(--xck-mono); border-color: var(--xck-border); }
+input.ss-num { appearance: textfield; -moz-appearance: textfield; }
+input.ss-num::-webkit-inner-spin-button { appearance: none; margin: 0; }
+input.ss-num:hover { border-color: var(--xck-control-border); }
+/* Options that belong to the choice above them, tucked under it on a hairline. */
+.ss-detail { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--xck-border); border-radius: 10px; background: var(--xck-canvas); }
+.ss-detail[hidden] { display: none; }
+.ss-seg-5 > button { padding-inline: 2px; font-size: 12.5px; }
+.ss-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.ss-size { display: grid; grid-template-columns: 1fr auto 1fr auto; align-items: end; gap: 8px; }
+.ss-times { padding-bottom: 8px; color: var(--xck-text-2); }
+.ss-size .ss-icon-key { --kl: 1px; }
+.ss-error { margin: 0; }
+button.ss-quiet { --kl: 1px; min-height: 30px; padding: 3px 10px; font-size: 12.5px; }
+.ss-style-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.ss-style-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+button.ss-style { --kl: 1px; --ke: inset 0 0 0 1px var(--xck-control-border); display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 5px 10px 5px 6px; text-align: left; min-width: 0; }
+.ss-style-swatch { flex: none; width: 40px; height: 28px; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(19,19,19,.18); }
+.ss-style-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; }
+button.ss-sure { --kc: var(--xck-neg); --ke: inset 0 0 0 1.5px var(--xck-neg); color: var(--xck-neg); background: #fbe9e6; }
+/* Placement: nine alignment points beside the exact position. */
+.ss-place { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: center; }
+.ss-place-xy { display: grid; gap: 8px; }
+.ss-align { display: grid; grid-template-columns: repeat(3, 36px); gap: 4px; padding: 4px; border: 1px solid var(--xck-border); border-radius: 10px; background: var(--xck-sunken); }
+.ss-align > button, .ss-align > button:hover, .ss-align > button:active { --kl: 0px; width: 36px; min-height: 32px; padding: 0; border-radius: 7px; background: none; box-shadow: none; translate: none; display: grid; place-items: center; }
+.ss-align > button::before { content: ''; width: 7px; height: 7px; border-radius: 2px; background: #85878c; }
+.ss-align > button:hover { background: var(--xck-surface); }
+.ss-align > button[aria-pressed=true] { background: var(--xck-ink); }
+.ss-align > button[aria-pressed=true]::before { background: #fff; width: 11px; height: 11px; }
+.ss-mono-note { font: 500 12.5px/1.4 var(--xck-mono); }
+.ss-slider input[type=range] { grid-column: 1 / -1; width: 100%; min-height: 24px; margin: 0; padding: 0; border: 0; background: none; accent-color: var(--xck-ink); cursor: pointer; }
+.ss-slider input[type=range]:disabled { cursor: not-allowed; opacity: .45; }
+.ss-field { display: grid; gap: 5px; min-width: 0; }
+.ss-field label { font-size: 13px; font-weight: 550; color: var(--xck-text-2); }
+.ss-field input, .ss-field textarea { width: 100%; min-width: 0; }
+textarea { font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid var(--xck-control-border); border-radius: 8px; resize: vertical; color: var(--xck-text); background: var(--xck-surface); }
+textarea:focus-visible { outline: 2px solid var(--xck-focus); outline-offset: 2px; }
+
+/* Canvas presets: a small proportional sketch, the name, and the printed size. */
+.ss-presets { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+button.ss-preset { --kl: 1px; --ke: inset 0 0 0 1px var(--xck-control-border); display: grid; grid-template-columns: 26px 1fr; grid-template-rows: auto auto; align-items: center; column-gap: 8px; min-height: 48px; padding: 6px 10px; text-align: left; }
+button.ss-preset[aria-pressed=true] { --kl: 2px; --kc: var(--xck-ink); --ke: inset 0 0 0 2px var(--xck-ink); }
+button.ss-preset[aria-pressed=true] .ss-preset-shape { background: var(--xck-ink); }
+.ss-preset-shape { grid-row: 1 / 3; justify-self: center; border: 1.5px solid var(--xck-ink); border-radius: 2px; }
+.ss-preset-shape.ss-fit { border-style: dashed; }
+.ss-preset-name { font-size: 13px; font-weight: 700; line-height: 1.2; }
+.ss-preset-size { font: 500 12.5px/1.3 var(--xck-mono); color: var(--xck-text-2); }
+
+/* Backgrounds. Artwork keeps its own colour; the selected tile gets an ink edge. */
+.ss-art { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+button.ss-art-tile, button.ss-art-tile:hover, button.ss-art-tile:active { --kl: 0px; --ke: inset 0 0 0 1px var(--xck-border); display: grid; padding: 0; min-height: 0; overflow: hidden; border-radius: 10px; text-align: left; translate: none; box-shadow: var(--ke); }
+button.ss-art-tile img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--tone, var(--xck-sunken)); }
+button.ss-art-tile span { padding: 4px 7px 5px; font-size: 12.5px; font-weight: 650; line-height: 1.25; overflow-wrap: anywhere; }
+button.ss-art-tile[aria-pressed=true] { box-shadow: 0 0 0 2px var(--xck-surface) inset, 0 0 0 2.5px var(--xck-ink); }
+button.ss-art-tile[aria-pressed=true] span { background: var(--xck-ink); color: var(--xck-on-ink); }
+.ss-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+button.ss-chip, button.ss-chip:hover, button.ss-chip:active { --kl: 0px; width: 34px; height: 34px; min-height: 0; padding: 0; border-radius: 50%; background: var(--chip); translate: none; box-shadow: inset 0 0 0 1px rgba(19,19,19,.18); }
+button.ss-swatch, button.ss-swatch:hover, button.ss-swatch:active { border-radius: 9px; width: 40px; }
+button.ss-chip[aria-pressed=true] { box-shadow: inset 0 0 0 1px rgba(19,19,19,.2), 0 0 0 2px var(--xck-surface), 0 0 0 4px var(--xck-ink); }
+button.ss-chip:focus-visible { outline-offset: 6px; }
+.ss-custom-color { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13.5px; font-weight: 550; }
+.ss-custom-color input[type=color] { width: 52px; min-height: 34px; padding: 3px; cursor: pointer; }
+.ss-own { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.ss-own-tile { width: 96px; }
+
+/* Layers: a list of marks, top first. The selected row carries an ink edge on its left. */
+.ss-layer-list + .ss-note { margin-top: 10px; }
+.ss-layers-empty { padding: 14px 0; }
+.ss-layer-list { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 4px; }
+button.ss-layer, button.ss-layer:hover, button.ss-layer:active { --kl: 0px; display: flex; align-items: center; gap: 10px; width: 100%; min-height: 38px; padding: 6px 10px; border-radius: 8px; text-align: left; font-size: 13.5px; font-weight: 600; translate: none; box-shadow: inset 0 0 0 1px var(--xck-border); }
+button.ss-layer:hover { background: var(--xck-canvas); }
+button.ss-layer[aria-pressed=true] { background: var(--xck-canvas); box-shadow: inset 4px 0 0 var(--xck-ink), inset 0 0 0 1.5px var(--xck-ink); }
+button.ss-layer span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ss-props { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--xck-border); display: grid; gap: 10px; }
+.ss-layer-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+button.ss-act { --kl: 1px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; padding: 4px 8px; font-size: 13px; }
+
+/* Crop panel */
+.ss-crop-fields { grid-template-columns: 1fr 1fr; }
+.ss-crop-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-top: 14px; }
+.ss-crop-actions .xck-primary { grid-column: 1 / -1; }
+
+/* ---------- Export: a sheet with the print feeding out on top ---------- */
+.ss-dialog { width: min(440px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); padding: 0; border: 0; border-radius: 16px; background: var(--xck-surface); color: var(--xck-text); box-shadow: 0 0 0 1.5px var(--xck-ink), 0 5px 0 var(--xck-ink), 0 40px 80px -30px rgba(0,0,0,.6); overflow: auto; }
+.ss-dialog::backdrop { background: rgba(19,19,19,.45); }
+.ss-export { padding: 18px 20px 20px; display: grid; gap: 4px; }
+.ss-export-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.ss-export-head h2 { margin: 0; font-size: 20px; font-weight: 800; font-stretch: 116%; letter-spacing: -.03em; }
+.ss-export-feed { margin: 10px 0 6px; padding: 14px; border-radius: 12px; background: var(--xck-sunken); background-image: radial-gradient(#cfcfc7 1px, transparent 1.2px); background-size: 12px 12px; display: grid; place-items: center; }
+.ss-export-feed img { display: block; max-width: 100%; max-height: 190px; box-shadow: 0 12px 24px -12px rgba(0,0,0,.45); }
+@media (prefers-reduced-motion: no-preference) {
+  .ss-dialog[open] .ss-export-feed img { animation: ss-feed .5s var(--xck-ease) both; }
+  @keyframes ss-feed { from { clip-path: inset(0 0 100% 0); translate: 0 -8px; } to { clip-path: inset(0); translate: 0 0; } }
+}
+.ss-scale > button { display: grid; justify-items: center; gap: 0; padding-block: 5px; min-height: 44px; }
+.ss-scale > button strong { font-size: 14px; }
+.ss-scale > button span { font: 500 12.5px var(--xck-mono); opacity: .85; }
+.ss-filename { display: flex; align-items: center; gap: 0; min-width: 0; }
+.ss-filename input { flex: 1; border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.ss-ext { padding: 0 10px; min-height: 36px; display: grid; place-items: center; border: 1px solid var(--xck-control-border); border-left: 0; border-radius: 0 8px 8px 0; background: var(--xck-sunken); font: 600 12.5px var(--xck-mono); }
+.ss-readout { margin: 10px 0 0; font: 600 12.5px/1.4 var(--xck-mono); color: var(--xck-text); }
+.ss-export .ss-status { position: static; translate: none; max-width: none; margin: 4px 0 0; padding: 0; background: none; color: var(--xck-text-2); font-weight: 550; }
+.ss-export-actions { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; margin-top: 12px; }
+.ss-export-actions > button { justify-content: center; min-height: 42px; }
+
+/* ---------- Narrow: one column. Tools become a row of keys above the stage; the inspector follows. ---------- */
+@media (max-width: 1100px) {
+  .ss-work { grid-template-columns: 76px minmax(0, 1fr) 296px; }
+}
+@media (max-width: 860px) {
+  .ss-app { display: block; height: auto; min-height: 0; }
+  .ss-head { padding: 12px 16px; }
+  .ss-actions { width: 100%; }
+  .ss-actions > #export-open { margin-left: auto; }
+  .ss-work { display: flex; flex-direction: column; }
+  .ss-tools { flex-direction: row; gap: 6px; padding: 10px 16px; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--xck-border); scrollbar-width: thin; }
+  button.ss-tool { flex: 1 0 56px; min-height: 52px; }
+  .ss-stage { min-height: 0; }
+  .ss-board { height: clamp(290px, 52svh, 530px); padding: 16px; }
+  .ss-inspector { border-left: 0; border-top: 1px solid var(--xck-border); }
+  .ss-panel { overflow: visible; }
+  .ss-art { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); }
+}
+@media (max-width: 520px) {
+  .ss-actions { gap: 6px; flex-wrap: nowrap; }
+  .ss-pair { margin-right: 0; }
+  .ss-actions > #open, .ss-actions > #copy { width: 40px; padding: 0; justify-content: center; }
+  .ss-btn-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .ss-tools { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: visible; }
+  button.ss-tool { min-height: 50px; }
+}
+@media (max-width: 400px) {
+  .ss-actions { gap: 6px; }
+  .ss-pair { margin-right: 0; }
+  .ss-actions > button:not(.ss-icon-key) { padding-inline: 10px; }
+  button.ss-preset { padding-inline: 8px; column-gap: 6px; }
+  .ss-drop { padding: 22px 18px 18px; }
+  .ss-drop h2 { font-size: 25px; }
+  .ss-strip { flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) { .ss * { transition: none !important; } }
+
+@media (max-width: 600px) {
+  .ss-empty .ss-drop { padding: 12px 16px; text-align: center; }
+  .ss-empty .ss-kicker, .ss-empty .ss-limits { display: none; }
+  .ss-empty .ss-drop h2 { font-size: 20px; }
+  .ss-empty .ss-drop p { margin-bottom: 8px; }
+}
+.ss-meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ss-id { flex: 1 1 200px; }
+
+#guides[aria-pressed=true] { background: var(--xck-ink); color: var(--xck-on-ink); }

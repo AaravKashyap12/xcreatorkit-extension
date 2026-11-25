@@ -29,8 +29,8 @@ const errors = [], requests = [];
 ctx.on('page', (p) => p.on('pageerror', (e) => errors.push(String(e))));
 ctx.on('request', (r) => { if (/^https?:/.test(r.url())) requests.push(r.url()); });
 
-const PAGES = [['launcher.html', 'Chooser'], ['analytics.html', 'Analytics'], ['report.html', 'Ledger'], ['dashboard.html', 'Rewards pace'], ['receipt.html', 'Receipts'], ['postcard.html', 'Post to image'], ['reply.html', 'Reply drafter']];
-const TOOLS = ['Analytics', 'Ledger', 'Rewards pace', 'Receipts', 'Post to image', 'Reply drafter', 'Following settings'];
+const PAGES = [['launcher.html', 'Chooser'], ['analytics.html', 'Analytics'], ['report.html', 'Ledger'], ['dashboard.html', 'Rewards pace'], ['receipt.html', 'Receipts'], ['postcard.html', 'Post to image'], ['screenshot.html', 'Screenshot editor']];
+const TOOLS = ['Analytics', 'Ledger', 'Rewards pace', 'Receipts', 'Post to image', 'Screenshot editor', 'Following settings'];
 const CANVAS = 'rgb(244, 244, 241)', TEXT = 'rgb(19, 19, 19)', INK = 'rgb(19, 19, 19)';
 const AN_CANVAS = CANVAS; // Analytics sits on the same soft ground as every other tool
 
@@ -231,30 +231,6 @@ try {
   // No UI class from the tool pages may match an element inside any artwork.
   const leaks = await page.evaluate(() => [...document.querySelectorAll('.stage-frame [class]')].flatMap((el) => [...el.classList].filter((c) => c.startsWith('xck-'))));
   check('Artwork carries no xck- UI classes', leaks.length === 0, leaks.join(','));
-
-  // ---------- Reply drafter (local beta): the same system; behaviour is covered by verify-reply.mjs ----------
-  await page.setViewportSize({ width: 1280, height: 900 });
-  await page.goto(`${base}/reply.html`);
-  await page.getByRole('button', { name: 'Enable reply drafting' }).click();
-  await page.locator('#post').waitFor();
-  await page.waitForFunction(() => document.querySelector('#reply-status').textContent.length > 0);
-  const reply = await page.evaluate(() => {
-    const css = (sel) => getComputedStyle(document.querySelector(sel));
-    const draft = css('#draft-0'), status = css('#reply-status'), go = css('#draft-reply'), key = css('.reply-actions button:not(#draft-reply)');
-    return { draftSize: draft.fontSize, draftEdge: draft.borderTopColor, draftLip: draft.boxShadow, statusFont: status.fontFamily, statusText: document.querySelector('#reply-status').textContent.length > 0,
-      disabledGo: go.boxShadow, keyFace: key.backgroundColor, keyLip: key.boxShadow, beta: document.querySelector('.reply-beta').textContent };
-  });
-  check('Reply drafter: the draft is the main object on a sheet, the model state in readable body type, labelled a beta', reply.draftSize === '16px' && reply.draftEdge === 'rgb(222, 222, 216)' && reply.draftLip !== 'none' && /XckArchivo/.test(reply.statusFont) && reply.statusText && reply.beta === 'Reply drafting beta', JSON.stringify(reply));
-  check('Reply drafter: actions are keys; a key that cannot be used yet lies flat', /0px 2px 0px 0px/.test(reply.keyLip) && reply.keyFace === 'rgb(255, 255, 255)' && reply.disabledGo === 'none', JSON.stringify(reply));
-  await page.getByRole('button', { name: 'Edit my voice' }).click();
-  await page.getByRole('button', { name: 'Continue' }).click();
-  await page.getByRole('button', { name: 'Continue' }).click();
-  const voice = page.locator('#profile-voice input[type=radio]');
-  await voice.first().focus();
-  await page.keyboard.press('ArrowDown');
-  const voiceLook = await page.evaluate(() => { const on = document.querySelector('#profile-voice label:has(input:checked)'); const off = document.querySelector('#profile-voice label:not(:has(input:checked))'); const s = getComputedStyle(on); return { edge: s.boxShadow, ring: s.outlineStyle, offset: parseFloat(s.outlineOffset), offEdge: getComputedStyle(off).boxShadow, offRing: getComputedStyle(off).outlineStyle }; });
-  check('Reply drafter: the chosen voice carries an ink edge; keyboard focus is a separate ring outside it', /rgb\(19, 19, 19\).*inset|inset.*rgb\(19, 19, 19\)/.test(voiceLook.edge) && voiceLook.ring !== 'none' && voiceLook.offset >= 2 && voiceLook.offEdge !== voiceLook.edge && voiceLook.offRing === 'none', JSON.stringify(voiceLook));
-  await page.screenshot({ path: `${shots}/reply-editor-1280.png`, fullPage: true });
 
   check('No page errors', errors.length === 0, errors.join('\n'));
   check('Design pages make no web requests', requests.length === 0, requests.join(', '));

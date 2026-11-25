@@ -43,6 +43,7 @@ function notices() {
     else throw new Error(`No licence text found for bundled package ${name}`);
     parts.push('');
   }
+  parts.push(readFileSync('THIRD_PARTY_NOTICES.md', 'utf8').split('## Screenshot editor artwork')[1].trim());
   return parts.join('\n');
 }
 

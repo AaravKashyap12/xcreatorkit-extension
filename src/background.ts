@@ -1,4 +1,3 @@
-import { addReplyMenu, registerReply, replyMenuClicked, replyMessage } from './reply/background';
 // Service worker. The toolbar opens the chooser; capture starts only on request.
 import { RUN_KEY, runCapture, type RunStatus } from './capture/run';
 import { installFollowBack } from './followback/register';
@@ -15,7 +14,6 @@ function start(active: chrome.tabs.Tab | undefined) {
 }
 
 chrome.runtime.onMessage.addListener((msg: { type?: string }, _sender, reply) => {
-  if (replyMessage(msg, _sender, reply)) return true;
   if (postcardMessage(msg, _sender, reply)) return true;
   if (msg?.type === 'xck:capture-current') {
     if (_sender.id !== chrome.runtime.id || _sender.url?.split('#')[0] !== page('launcher.html')) {
@@ -37,6 +35,16 @@ chrome.runtime.onMessage.addListener((msg: { type?: string }, _sender, reply) =>
   return false;
 });
 
+// Also handles unpacked upgrades that load the new worker without an onInstalled event.
+// Removing absent keys is idempotent. Other tools retain their own storage and X access.
+async function retireReplyDrafter() {
+  const legacy = ['xck:reply-consent', 'xck:reply-profile', 'xck:reply-profile-draft', 'xck:reply-facts'];
+  await chrome.storage.local.remove(legacy);
+  const scripts = await chrome.scripting.getRegisteredContentScripts({ ids: ['xck-reply-target'] });
+  if (scripts.length) await chrome.scripting.unregisterContentScripts({ ids: ['xck-reply-target'] });
+}
+void retireReplyDrafter();
+
 chrome.runtime.onInstalled.addListener(({ reason }) => {
   chrome.contextMenus.removeAll(() => {
     const items: [string, string][] = [
@@ -47,7 +55,6 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
     ];
     for (const [id, title] of items) chrome.contextMenus.create({ id, title, contexts: ['action'] });
     addPostcardMenu();
-    addReplyMenu();
   });
   void chrome.storage.session.remove(RUN_KEY);
   if (reason === 'install') void chrome.storage.local.set({ [TOUR_KEY]: 1 }).catch(() => {});
@@ -63,6 +70,3 @@ chrome.contextMenus.onClicked.addListener((info) => {
 installFollowBack();
 chrome.contextMenus.onClicked.addListener((info, tab) => { void postcardMenuClicked(info, tab); });
 registerPostcard();
-
-registerReply();
-chrome.contextMenus.onClicked.addListener((info, tab) => { void replyMenuClicked(info, tab); });

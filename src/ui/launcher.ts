@@ -1,4 +1,3 @@
-import { bindReplyPanelLinks } from '../reply/open';
 import { TOOLS, mountNavigation } from './navigation';
 import { h } from './dom';
 import { loadState, updateState } from '../store/chromeStore';
@@ -52,9 +51,8 @@ document.querySelector('#tool-list')!.append(...TOOLS.slice(0, -1).map((tool, i)
   // A hairline starts each group after the first (Numbers, Make, On X).
   class: i > 0 && tool.group !== TOOLS[i - 1]!.group ? 'tool-link group-start' : 'tool-link', href: tool.href, 'aria-label': tool.name, 'aria-description': tool.description,
   target: '_blank', rel: 'noopener',
-}, h('strong', {}, tool.name), h('small', {}, tool.description), h('span', { class: 'go', 'aria-hidden': 'true' }, tool.href === 'reply.html' ? '▥' : '↗'))));
+}, h('strong', {}, tool.name), h('small', {}, tool.description), h('span', { class: 'go', 'aria-hidden': 'true' }, '↗'))));
 
-bindReplyPanelLinks(document.querySelector<HTMLElement>('#tool-list')!);
 
 /** What the active tab is, judged from its URL only. Nothing on the page is read. */
 function tabHint(url?: string) {

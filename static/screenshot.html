@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Screenshot editor · X Creator Kit</title>
+<link rel="stylesheet" href="tokens.css"><link rel="stylesheet" href="ui.css"><link rel="stylesheet" href="screenshot.css">
+</head><body class="ss">
+<main class="ss-app">
+<header class="ss-head">
+  <div class="ss-id">
+    <h1 class="ss-title">Screenshot editor</h1>
+    <p class="ss-meta" id="meta">PNG, JPEG or WebP · stays on this device</p>
+  </div>
+  <div class="ss-actions">
+    <div class="ss-pair" role="group" aria-label="History">
+      <button type="button" id="undo" class="ss-icon-key" data-icon="undo" aria-label="Undo" title="Undo (Ctrl or ⌘ Z)" disabled></button>
+      <button type="button" id="redo" class="ss-icon-key" data-icon="redo" aria-label="Redo" title="Redo (Shift Ctrl or ⌘ Z)" disabled></button>
+    </div>
+    <button type="button" id="open" data-icon="open" aria-label="Open image"><span class="ss-btn-text">Open image</span></button>
+    <button type="button" id="copy" data-icon="copy" aria-label="Copy image" disabled><span class="ss-btn-text">Copy</span></button>
+    <button type="button" id="export-open" class="xck-primary" data-icon="export" disabled>Export…</button>
+  </div>
+</header>
+
+<div class="ss-work">
+  <div class="ss-tools" id="tools" role="group" aria-label="Tools"></div>
+
+  <section class="ss-stage" aria-label="Canvas">
+    <p class="ss-alert" id="alert" role="alert" hidden></p>
+    <div class="ss-board" id="board">
+      <canvas id="canvas" tabindex="0" hidden aria-describedby="hint"></canvas>
+      <div class="ss-empty" id="empty">
+        <div class="ss-drop">
+          <p class="ss-kicker">New canvas</p>
+          <h2>Drop a screenshot</h2>
+          <p>Paste it with Ctrl or ⌘ V, drop a file here, or choose one.</p>
+          <button type="button" id="choose" class="xck-primary">Choose image</button>
+          <p class="ss-limits">PNG · JPEG · WebP · up to 32 MB · 50 MP</p>
+        </div>
+      </div>
+    </div>
+    <div class="ss-strip">
+      <p class="ss-hint" id="hint">Open an image to start.</p>
+      <div class="ss-zoom" role="group" aria-label="Zoom">
+        <button type="button" id="guides" class="ss-icon-key ss-small-key" data-icon="grid" aria-label="Composition grid" title="Composition grid (preview only)" aria-pressed="false" disabled></button>
+        <button type="button" id="zoom-out" class="ss-icon-key ss-small-key" data-icon="minus" aria-label="Zoom out" disabled></button>
+        <button type="button" id="zoom-fit" class="ss-zoom-read" aria-label="Fit canvas to view" title="Fit" disabled>Fit</button>
+        <button type="button" id="zoom-in" class="ss-icon-key ss-small-key" data-icon="plus" aria-label="Zoom in" disabled></button>
+      </div>
+    </div>
+    <p class="ss-status" id="status" role="status" aria-live="polite"></p>
+  </section>
+
+  <aside class="ss-inspector" aria-label="Inspector">
+    <div class="ss-tabs" role="tablist" aria-label="Inspector sections" id="tabs">
+      <button type="button" role="tab" id="tab-frame" aria-controls="panel-frame" aria-selected="true">Frame</button>
+      <button type="button" role="tab" id="tab-background" aria-controls="panel-background" aria-selected="false" tabindex="-1">Background</button>
+      <button type="button" role="tab" id="tab-layers" aria-controls="panel-layers" aria-selected="false" tabindex="-1">Layers <span id="layer-count" class="ss-count">0</span></button>
+    </div>
+
+    <div class="ss-panel" role="tabpanel" id="panel-frame" aria-labelledby="tab-frame">
+      <section class="ss-group ss-styles" aria-labelledby="styles-label">
+        <div class="ss-row"><h3 class="ss-label" id="styles-label">My styles</h3><button type="button" class="ss-quiet" id="style-save" aria-expanded="false" aria-controls="style-form">Save this look</button></div>
+        <form class="ss-detail" id="style-form" hidden>
+          <div class="ss-field"><label for="style-name">Style name</label><input type="text" id="style-name" autocomplete="off" spellcheck="false" aria-describedby="style-scope"></div>
+          <p class="ss-note" id="style-scope"></p>
+          <div class="ss-row"><button type="submit" class="xck-primary">Save style</button><button type="button" id="style-cancel">Cancel</button></div>
+        </form>
+        <ul class="ss-style-list" id="style-list" hidden></ul>
+        <p class="ss-note" id="style-empty">Reuse one look across screenshots. Styles stay in this browser.</p>
+      </section>
+      <section class="ss-group">
+        <h3 class="ss-label" id="canvas-label">Canvas size</h3>
+        <div class="ss-presets" id="presets" role="group" aria-labelledby="canvas-label"></div>
+        <div class="ss-detail" id="custom-size" hidden>
+          <div class="ss-size">
+            <div class="ss-field"><label for="canvas-w">Width, px</label><input type="number" id="canvas-w" step="1" inputmode="numeric" aria-describedby="canvas-error"></div>
+            <span class="ss-times" aria-hidden="true">×</span>
+            <div class="ss-field"><label for="canvas-h">Height, px</label><input type="number" id="canvas-h" step="1" inputmode="numeric" aria-describedby="canvas-error"></div>
+            <button type="button" class="ss-icon-key" id="canvas-swap" data-icon="swap" aria-label="Swap width and height" title="Swap width and height"></button>
+          </div>
+          <p class="xck-field-error ss-error" id="canvas-error" role="alert" hidden></p>
+        </div>
+      </section>
+      <section class="ss-group">
+        <h3 class="ss-label">Spacing</h3>
+        <div data-range="padding"></div>
+        <div data-range="radius"></div>
+        <div class="xck-seg ss-seg" id="corner-presets" role="group" aria-label="Corner presets">
+          <button type="button" value="0">Square</button><button type="button" value="3">Curved</button><button type="button" value="9">Round</button>
+        </div>
+      </section>
+      <section class="ss-group">
+        <h3 class="ss-label" id="shadow-label">Shadow</h3>
+        <div class="xck-seg ss-seg ss-seg-5" data-field="shadow" role="group" aria-labelledby="shadow-label">
+          <button type="button" value="none">None</button><button type="button" value="soft">Soft</button><button type="button" value="lifted">Lifted</button><button type="button" value="print">Print</button><button type="button" value="custom">Custom</button>
+        </div>
+        <div class="ss-detail" id="shadow-custom" hidden>
+          <div data-shadow="x"></div><div data-shadow="y"></div><div data-shadow="blur"></div><div data-shadow="spread"></div><div data-shadow="opacity"></div>
+          <div class="ss-custom-color"><label for="shadow-color">Shadow colour</label><input type="color" id="shadow-color"></div>
+        </div>
+      </section>
+      <section class="ss-group">
+        <h3 class="ss-label" id="border-label">Border</h3>
+        <div class="xck-seg ss-seg" data-field="border" role="group" aria-labelledby="border-label">
+          <button type="button" value="none">None</button><button type="button" value="paper">Paper</button><button type="button" value="ink">Ink</button>
+        </div>
+        <div id="border-width-row"><div data-range="borderWidth"></div></div>
+      </section>
+      <section class="ss-group">
+        <h3 class="ss-label" id="window-label">Browser window</h3>
+        <div class="xck-seg ss-seg" data-field="window" role="group" aria-labelledby="window-label">
+          <button type="button" value="none">None</button><button type="button" value="light">Light</button><button type="button" value="dark">Dark</button>
+        </div>
+        <div class="ss-field" id="window-title-row"><label for="windowTitle">Address bar</label><input type="text" id="windowTitle" maxlength="80" autocomplete="off" spellcheck="false"></div>
+      </section>
+    </div>
+
+    <div class="ss-panel" role="tabpanel" id="panel-background" aria-labelledby="tab-background" hidden>
+      <section class="ss-group">
+        <h3 class="ss-label" id="art-label">Artwork</h3>
+        <div class="ss-art" id="art" role="group" aria-labelledby="art-label"></div>
+      </section>
+      <section class="ss-group">
+        <h3 class="ss-label" id="gradient-label">Gradient</h3>
+        <div class="ss-chips" id="gradients" role="group" aria-labelledby="gradient-label"></div>
+      </section>
+      <section class="ss-group">
+        <h3 class="ss-label" id="solid-label">Solid</h3>
+        <div class="ss-chips" id="solids" role="group" aria-labelledby="solid-label"></div>
+        <div class="ss-custom-color"><label for="color">Custom colour</label><input type="color" id="color" value="#dde4d9"></div>
+      </section>
+      <section class="ss-group">
+        <h3 class="ss-label">Your image</h3>
+        <div class="ss-own" id="own"><button type="button" id="own-choose">Choose a background…</button></div>
+      </section>
+      <section class="ss-group">
+        <div data-range="blur"></div>
+        <p class="ss-note" id="blur-note">Softens artwork and your own image.</p>
+      </section>
+    </div>
+
+    <div class="ss-panel" role="tabpanel" id="panel-layers" aria-labelledby="tab-layers" hidden></div>
+
+    <div class="ss-panel ss-crop" id="panel-crop" hidden>
+      <h2 class="ss-panel-title">Crop</h2>
+      <p class="ss-note">Drag the frame or its handles, or type exact pixels.</p>
+      <section class="ss-group">
+        <h3 class="ss-label" id="aspect-label">Aspect</h3>
+        <div class="xck-seg ss-seg" id="crop-aspect" role="group" aria-labelledby="aspect-label">
+          <button type="button" value="0">Free</button><button type="button" value="1">1:1</button><button type="button" value="1.7777778">16:9</button><button type="button" value="1.3333333">4:3</button><button type="button" value="0.8">4:5</button>
+        </div>
+      </section>
+      <section class="ss-group ss-crop-fields">
+        <div class="ss-field"><label for="crop-x">Left</label><input type="number" id="crop-x" min="0" step="1" inputmode="numeric"></div>
+        <div class="ss-field"><label for="crop-y">Top</label><input type="number" id="crop-y" min="0" step="1" inputmode="numeric"></div>
+        <div class="ss-field"><label for="crop-w">Width</label><input type="number" id="crop-w" min="8" step="1" inputmode="numeric"></div>
+        <div class="ss-field"><label for="crop-h">Height</label><input type="number" id="crop-h" min="8" step="1" inputmode="numeric"></div>
+      </section>
+      <div class="ss-crop-actions">
+        <button type="button" id="crop-reset">Full image</button>
+        <button type="button" id="crop-cancel">Cancel</button>
+        <button type="button" id="crop-apply" class="xck-primary">Apply crop</button>
+      </div>
+    </div>
+  </aside>
+</div>
+</main>
+
+<dialog class="ss-dialog" id="export-dialog" aria-labelledby="export-title">
+  <div class="ss-export">
+    <div class="ss-export-head">
+      <h2 id="export-title">Export image</h2>
+      <button type="button" class="ss-icon-key ss-small-key" id="export-close" data-icon="close" aria-label="Close export"></button>
+    </div>
+    <div class="ss-export-feed"><img id="export-thumb" alt="Preview of the exported image"></div>
+    <section class="ss-group">
+      <h3 class="ss-label" id="format-label">Format</h3>
+      <div class="xck-seg ss-seg" id="format" role="group" aria-labelledby="format-label">
+        <button type="button" value="image/png">PNG</button><button type="button" value="image/jpeg">JPEG</button><button type="button" value="image/webp">WebP</button>
+      </div>
+    </section>
+    <section class="ss-group" id="quality-row">
+      <div class="ss-slider"><label for="quality">Quality</label><output id="quality-out" for="quality"></output><input type="range" id="quality" min="50" max="100" step="1" value="92"></div>
+    </section>
+    <p class="ss-note" id="png-note">PNG keeps every pixel. Choose JPEG or WebP for a smaller file.</p>
+    <section class="ss-group">
+      <h3 class="ss-label" id="scale-label">Size</h3>
+      <div class="xck-seg ss-seg ss-scale" id="scale" role="group" aria-labelledby="scale-label"></div>
+    </section>
+    <section class="ss-group">
+      <div class="ss-field"><label for="filename">File name</label><div class="ss-filename"><input type="text" id="filename" autocomplete="off" spellcheck="false"><span id="ext" class="ss-ext">.png</span></div></div>
+    </section>
+    <p class="ss-readout" id="export-info"></p>
+    <p class="ss-note" id="art-resolution" hidden></p>
+    <p class="ss-status" id="export-status" role="status" aria-live="polite"></p>
+    <div class="ss-export-actions">
+      <button type="button" id="export-copy" data-icon="copy">Copy PNG</button>
+      <button type="button" id="export-save" class="xck-primary" data-icon="export">Download</button>
+    </div>
+  </div>
+</dialog>
+
+<input type="file" id="file" accept="image/png,image/jpeg,image/webp" hidden>
+<input type="file" id="bg-file" accept="image/png,image/jpeg,image/webp" hidden>
+<script src="screenshot.js"></script>
+</body></html>

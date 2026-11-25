@@ -26,7 +26,7 @@
 .xck-links a:focus-visible, .xck-menu-toggle:focus-visible { outline:2px solid #fff; outline-offset:2px }
 .xck-shell-end { display:flex; align-items:center; gap:14px; margin-left:auto; min-width:0 }
 .xck-trust { margin:0; color:#a9abb0; font:500 12.5px/1.3 var(--xck-mono, XckMartian, ui-monospace, monospace); white-space:nowrap }
-@media (max-width:1320px) { .xck-trust { display:none } }
+@media (max-width:1390px) { .xck-trust { display:none } }
 @media (max-width:1080px) { .xck-shell-end { display:none } }
 
 @media (max-width:860px) {
@@ -61,7 +61,7 @@
 /* Seven tool routes fit above the compact-menu breakpoint. */
 @media (min-width:861px) and (max-width:1000px) {
   .xck-shell { gap:0 10px; padding:0 10px 0 14px }
-  .xck-links a { padding:0 9px;
+  .xck-links a { padding:0 6px;
     background-position:6px 50%, 6px calc(50% - 8px), 6px calc(50% + 8px), calc(100% - 6px) 50%, calc(100% - 6px) calc(50% - 8px), calc(100% - 6px) calc(50% + 8px) }
   .xck-links a:hover { background-position:2px 50%, 2px calc(50% - 8px), 2px calc(50% + 8px), calc(100% - 2px) 50%, calc(100% - 2px) calc(50% - 8px), calc(100% - 2px) calc(50% + 8px) }
   .xck-links li[data-group]:not(:first-child) { margin-left:5px; padding-left:6px }
