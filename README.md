@@ -37,6 +37,8 @@ The [illustrated walkthrough](https://xcreatorkit.com/guide/) covers setup and e
 
 ## Privacy
 
+[Read the privacy policy for extension version 0.4.0](PRIVACY.md).
+
 Readings stay in your browser. Dates use UTC, and the kit reads the current Analytics, Rewards, or profile page when you press **Read current X tab**. Post selection and Following highlights use optional X access.
 
 Screenshot editing and export run offline. **My styles** saves the name you choose and the appearance settings in this browser, under the local storage key `xck-screenshot-styles`. The screenshot, uploaded background, filename, annotations and browser-frame address stay in memory while you edit.
